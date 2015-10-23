@@ -23,7 +23,11 @@ or
 
     # git clone https://github.com/jeremywohl/moviebot.git
 
-## Prep a config
+## Prep
+
+Run bundler.
+
+    # bundle install
 
 Copy the sample config.
 
