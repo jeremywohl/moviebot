@@ -43,7 +43,7 @@ You'll probably want to [setup a new Slack team](https://slack.com/create) for y
 
 [Create a Slack bot user](https://my.slack.com/services/new/bot) and copy the API token into `config.rb`.
 
-![](docs/newbot.jpg)
+![](docs/newbot.png)
 
 ## Downloads
 
