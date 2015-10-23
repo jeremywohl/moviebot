@@ -52,7 +52,7 @@ You'll probably want to [setup a new Slack team](https://slack.com/create) for y
 
 ## Final config
 
-Look over the rest of `config.rb`, though the defaults are reasonable.
+Look over the rest of `config.rb`, though the defaults are probably suitable.
 
 ## Running
 
