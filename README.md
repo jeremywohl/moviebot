@@ -71,4 +71,4 @@ Equally exciting is stopping!
 
 # Commands
 
-...
+TODO.  For now, type `movie help` in Slack (or using whatever prefix you chose).
