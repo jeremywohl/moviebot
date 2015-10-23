@@ -1,0 +1,1 @@
+ruby moviebot.rb >> moviebot.log 2>&1 &

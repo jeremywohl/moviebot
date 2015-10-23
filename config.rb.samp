@@ -1,0 +1,29 @@
+##
+## Personal settings -- you must change these
+##
+
+# Where should we do our work?
+MOVIES_ROOT   = '/some/path/to/movies'
+
+# Slack settings
+SLACK_API_TOKEN = 'abcdefghijklmnopqrstuvwxyz'
+SLACK_CHAT_NAME = 'movie'   # how you get moviebot's attention
+SLACK_CHANNEL   = 'general' # moviebot will always respond here
+
+##
+## Additional settings -- the defaults are usually OK
+##
+
+# Where should we do our work?
+ENCODING_ROOT = "#{MOVIES_ROOT}/_encoding"
+RIPPING_ROOT  = "#{MOVIES_ROOT}/_ripping"
+DONE_ROOT     = "#{MOVIES_ROOT}/_done"
+
+# Where is Handbrake command-line binary?
+HANDBRAKE_BIN = '/Applications/Utilities/HandBrakeCLI'
+HANDBRAKE_PROFILE = 'High Profile'
+
+# MakeMKV command-line binary?
+MAKEMKV_BIN = '/Applications/MakeMKV.app/Contents/MacOS/makemkvcon'
+MKV_SCAN_MINLENGTH = 20     # minutes
+MKV_RIP_MINLENGTH  = 50     # minutes
