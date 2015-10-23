@@ -64,10 +64,13 @@ At this point, you should see action in your Slack client / web page.  If not, s
 
 ![](docs/wakingup.png)
 
-
-Equally exciting is stopping!
+(Equally exciting is stopping!)
 
     # ./stop
+
+Now throw a disc into your optical drive.  After some churning you should see some results.
+
+![](docs/newdisc.png)
 
 # Commands
 
