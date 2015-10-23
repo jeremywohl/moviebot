@@ -17,11 +17,11 @@ TODO: amazing screenshot!
 
 ## Clone this repository
 
-   # git clone git@github.com:jeremywohl/moviebot.git
+    # git clone git@github.com:jeremywohl/moviebot.git
 
 or
 
-   # git clone https://github.com/jeremywohl/moviebot.git
+    # git clone https://github.com/jeremywohl/moviebot.git
 
 ## Prep a config
 
