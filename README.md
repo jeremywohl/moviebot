@@ -11,7 +11,106 @@ _Warning: Please observe your country's laws regarding commercial entertainment.
 
 # What it looks like
 
-TODO: amazing screenshot!
+_A conversation in your Slack channel._
+
+> **moviebot**  
+> Waking up.  
+
+_Automatic detection of discs._
+  
+> **moviebot**  
+> Ooh, a new disc.  
+>  
+> **moviebot**  
+> There's only one show-length track, so I'm going to start ripping it now.  
+> 1: Games_of_Nonces_t00.mkv [1:53:51, 26.0G]  
+>  
+> **moviebot**  
+> Starting to rip "Games_of_Nonces_t00.mkv" (with 309G free space).  
+>  
+> **moviebot**  
+> Finished ripping of "Games_of_Nonces_t00.mkv" (took 47m:51s).  
+>  
+> **moviebot**  
+> @channel Ejecting!  Feed me another!  
+
+_Ready for more work once ripping is complete._
+
+> **moviebot**  
+> Starting the encode of "Games_of_Nonces_t00.m4v" (with 284G free space).  
+>  
+> **moviebot**  
+> Ooh, a new disc.  
+>  
+> This disc contains the following tracks:  
+> 1) What_Happens_In_A_Place_t00.mkv [1:41:13, 23.7G]  
+> 2) What_Happens_In_A_Place_t01.mkv [1:10:45, 15.2G]  
+> You can tell me to "rip 1[,2,3,..]" or "rip all" or "eject".  
+> @channel (see above)  
+>  
+> **jeremy**  
+> movie rip 1  
+>  
+> **moviebot**  
+> Starting to rip "What_Happens_In_A_Place_t00.mkv" (with 280G free space).  
+>  
+> **moviebot**  
+> Finished ripping of "What_Happens_In_A_Place_t00.mkv" (took 44m:33s).  
+>  
+> **moviebot**  
+> Finished encoding of "Games_of_Nonces_t00.m4v" (took 1h:48m).  
+
+_Encoding happens independently of ripping, queue any number of discs._
+
+> **moviebot**  
+> @channel Ejecting!  Feed me another!  
+>  
+> **moviebot**  
+> Starting the encode of "Games_of_Nonces_t00.m4v" (with 250G free space).  
+>  
+> **moviebot**  
+> Finished encoding of "Games_of_Nonces_t00.m4v" (took 1h:33m).  
+>  
+> **jeremy**  
+> movie space  
+>  
+> **moviebot**  
+> I have 269G of free space!  
+>  
+> **jeremy**  
+> movie list  
+>  
+> **moviebot**  
+> Here are your completed shows:  
+> 1) A Fine Afternoon  
+> 2) Games_of_Nonces_t00  
+> 3) What_Happens_In_A_Place_t00  
+
+_Organize your finished movies while others are in-flight._
+
+> **jeremy**  
+> movie title 2 3  
+>  
+> **moviebot**  
+> OK, I renamed "Games_of_Nonces_t00" to "Game of Nonces".  
+>  
+> **moviebot**  
+> OK, I renamed "What_Happens_In_A_Place_t00" to "What Happens in a Place".  
+>  
+> **jeremy**  
+> movie archive weepies 1 2  
+>  
+> **moviebot**  
+> OK, added "A Fine Afternoon" to my archive queue.  
+>  
+> **moviebot**  
+> OK, added "Game of Nonces" to my archive queue.  
+>  
+> **moviebot**  
+> Moved "A Fine Afternoon" to weepies (took 58s).  
+>  
+> **moviebot**  
+> Moved "Game of Nonces" to weepies (took 43s).
 
 # Setting up Moviebot
 
@@ -66,7 +165,8 @@ Start 'er up.
 
 At this point, you should see action in your Slack client / web page.  If not, something is terribly, terribly wrong.  Cheers!
 
-![](docs/wakingup.png)
+> **moviebot**  
+> Waking up.
 
 (Equally exciting is stopping!)
 
@@ -74,7 +174,8 @@ At this point, you should see action in your Slack client / web page.  If not, s
 
 Now throw a disc into your optical drive.  After it works a bit you should see some results.
 
-![](docs/newdisc.png)
+> **moviebot**  
+> Ooh, a new disc!
 
 # Commands
 
