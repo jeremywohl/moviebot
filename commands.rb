@@ -73,7 +73,7 @@ class Commands
     if files.empty?
       notify("There are no completed shows at the mo.")
     else
-      msg = "Here are completed shows:\n"
+      msg = "Here are your completed shows:\n"
       files.each_with_index do |path, index|
         msg << "#{index+1}) #{File.basename(path, '.*')}\n"
       end

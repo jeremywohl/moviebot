@@ -153,7 +153,7 @@ class DiscSpinner
       @queue << track
       set_state :ripping
     else
-      msg = "This disc contains the following tracks (of importance):\n"
+      msg = "This disc contains the following tracks:\n"
       @tracks.each_with_index do |track, index|
         msg << "#{index+1}) #{track.name} [#{track.time}, #{track.size}G]\n"
       end
