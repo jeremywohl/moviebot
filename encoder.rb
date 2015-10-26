@@ -28,13 +28,12 @@ class Mp4Spinner
 
     notify("Starting the encode of \"#{movie.base}.m4v\" (with #{free_space}G free space).")
     
-    start = Time.now
-    puts encode_cmd
-    puts `#{encode_cmd}`
+    result, timing = external_with_timing #{encode_cmd}
+    log :info, result
     
-    notify("Finished encoding of \"#{movie.base}.m4v\" (took #{format_time_diff(start)}).")
+    notify("Finished encoding of \"#{movie.base}.m4v\" (took #{timing}).")
     
-    puts "deleting #{movie.mkv_path}"
+    log :info, "deleting #{movie.mkv_path}"
     File.delete(movie.mkv_path)
     Dir.rmdir(File.dirname(movie.mkv_path))
     
@@ -51,8 +50,8 @@ MP4_SPINNER = Mp4Spinner.new
 Thread.new do
   begin
     MP4_SPINNER.go
-  rescue
+  rescue => e
+    log :info, 'mp4spinner died', exception: e
     notify("I (mp4spinner) die!", poke_channel: true)
-    puts $!, $@
   end
 end

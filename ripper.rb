@@ -23,11 +23,11 @@ class DiscSpinner
   #
   
   def what_device
-    `drutil status`.lines.grep(/Name:/).first[/Name:\s+(.+)$/, 1]
+    external('/usr/bin/drutil status', silent: true).lines.grep(/Name:/).first[/Name:\s+(.+)$/, 1]
   end
   
   def disc_present
-    `drutil status`.lines.grep(/No Media/).empty?
+    external('/usr/bin/drutil status', silent: true).lines.grep(/No Media/).empty?
   end
 
   def fetch_tracks
@@ -37,8 +37,8 @@ class DiscSpinner
     size = 0
 
     mkv_cmd = MKV_LIST % { minlength: MKV_SCAN_MINLENGTH * 60 }
-    `#{mkv_cmd}`.lines.each do |line|
-      puts line
+    external(mkv_cmd).lines.each do |line|
+      #log :info, line
       case line
       when /MSG:5073,260,0,"Your temporary key has expired/
         notify("Hmm, your MakeMKV key is expired.  Please update in the MakeMKV app, separately.")
@@ -77,14 +77,12 @@ class DiscSpinner
   end
   
   #
-  # external
+  # called via Slack commands
   #
 
   def eject
     set_state :ejecting
-    sleep 20
-    `drutil eject`
-    sleep 20
+    external '/usr/bin/drutil eject'
     set_state :idle
   end
   
@@ -184,22 +182,21 @@ class DiscSpinner
       mkv_dir = "#{RIPPING_ROOT}/#{SecureRandom.hex[0...5]}-#{File.basename(track.name, ".*")}"
       
       Dir.mkdir(mkv_dir)
-      start = Time.now
       notify("Starting to rip \"#{track.name}\" (with #{free_space}G free space).")
       
       rip_cmd = "#{MKV_RIP % { minlength: MKV_SCAN_MINLENGTH * 60 }} #{track.title} \"#{mkv_dir}\""
-      puts rip_cmd
-      results = `#{rip_cmd}`
-      puts results
+      log :info, rip_cmd
+      results, timing = external_with_timing rip_cmd
+      log :info, results
       
       if results.lines.grep(/Copy complete/).first =~ /failed/
-        notify("Sorry, the rip of \"#{track.name}\" failed (took #{format_time_diff(start)}).  Try cleaning the disc and refeeding?")
+        notify("Sorry, the rip of \"#{track.name}\" failed (took #{timing}).  Try cleaning the disc and refeeding?")
         Dir.rmdir(mkv_dir)
 
         fail = true
         break
       else
-        notify("Finished ripping of \"#{track.name}\" (took #{format_time_diff(start)}).")
+        notify("Finished ripping of \"#{track.name}\" (took #{timing}).")
       
         movie = OpenStruct.new(mkv_path: "#{mkv_dir}/#{track.name}", base: File.basename(track.name, ".*"))
         MP4_SPINNER.add_movie(movie)
@@ -221,8 +218,8 @@ DISC_SPINNER = DiscSpinner.new
 Thread.new do
   begin
     DISC_SPINNER.go
-  rescue
+  rescue => e
+    log :error, 'discspinner died', exception: e
     notify("I (discspinner) die!", poke_channel: true)
-    puts $!, $@
   end
 end

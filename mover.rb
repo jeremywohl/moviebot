@@ -2,8 +2,6 @@
 # Moving automata
 #
 
-TARGETS = { 'movies' => 'Movies', 'kid' => 'Movies/kid', 'tv' => 'Television', 'anim' => 'Movies/animation'}
-
 class Mover
   
   def initialize
@@ -18,13 +16,10 @@ class Mover
   end
 
   def move(move)
-    cmd   = "mv '#{move.source}' '/Volumes/Media Black/#{TARGETS[move.target]}'"
-    start = Time.now
-    
-    puts cmd
-    puts `#{cmd}`
-    
-    notify("Archived \"#{File.basename(move.source, '.*')}\" to #{move.target} (took #{format_time_diff(start)}).")
+    cmd = "mv '#{move.source}' '#{ARCHIVE_ROOT}/#{ARCHIVE_TARGETS[move.target]}'"
+    dummy, timing = external_with_timing cmd
+
+    notify("Archived \"#{File.basename(move.source, '.*')}\" to #{move.target} (took #{timing}).")
   end
   
   def add_move(m)
@@ -37,8 +32,8 @@ MOVER = Mover.new
 Thread.new do
   begin
     MOVER.go
-  rescue
+  rescue => e
+    log :error, "mover died", exception: e
     notify("I (mover) die!", poke_channel: true)
-    puts $!, $@
   end
 end

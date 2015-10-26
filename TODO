@@ -9,3 +9,4 @@ Features:
 - command to show queues
 - normalize tv episodes
 - respond in the Slack channel that brung you
+- command to dynamically adjust rip_minlength for a particular disc

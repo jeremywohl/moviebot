@@ -15,16 +15,60 @@ def format_time_diff(tstart)
   end
 end
 
-# tell Slack channel something; accepts /poke_channel: true/ to alert the channel.
+# convenience method for Slack notifications
 def notify(msg, opts={})
-  if opts[:poke_channel]
-    if msg.lines.size > 1
-      msg << "\n" if msg[-1] != "\n"
-      msg << "<!channel> (see above)"
-    else
-      msg = "<!channel> " << msg
-    end
+  SLACK.notify(msg, opts)
+end
+
+# run a shell command, capturing STDOUT
+def external(cmd, opts={})
+  _external(cmd, opts)
+end
+
+# run a shell command, returning STDOUT capture & timing string
+def external_with_timing(cmd, opts={})
+  opts[:timing] = true
+  _external(cmd, opts)
+end
+
+def _external(cmd, opts={})
+  log :info, "starting #{cmd}" if !opts.has_key?(:silent)
+
+  start = Time.now
+  result = %x(#{cmd})
+  diff = format_time_diff(start)
+  
+  log :info, "ran [#{cmd}] in #{diff}" if !opts.has_key?(:silent)
+  
+  if opts.has_key?(:timing)
+    return result, diff
+  else
+    return result
+  end
+end
+
+LOG_MUTEX = Mutex.new
+
+# log stuff
+def log(channel, msg, opts={})
+  tag = case channel
+  when :info
+    ' INFO'
+  when :error
+    'ERROR'
+  when :debug
+    'DEBUG'
   end
 
-  SLACK.message channel: SLACK_CHANNEL_ID, text: msg
+  prefix = "[#{Time.now.to_s} #{tag}]"
+
+  LOG_MUTEX.synchronize do
+    puts "#{prefix} #{msg}"
+
+    if opts.has_key?(:exception)
+      e = opts[:exception]
+      puts "#{prefix}   #{e.backtrace.first}: #{e.message} (#{e.class})"
+      e.backtrace.drop(1).map { |s| puts "#{prefix}     " << s }
+    end
+  end
 end

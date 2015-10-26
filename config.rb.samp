@@ -3,7 +3,11 @@
 ##
 
 # Where should we do our work?
-MOVIES_ROOT   = '/some/path/to/movies'
+MOVIES_ROOT = '/some/path/to/movies'
+
+# Where do you archive your movies? (optional)
+ARCHIVE_ROOT    = '/archive/path/to/movies'
+ARCHIVE_TARGETS = { 'movies' => 'movies', 'kid' => 'kid', 'tv' => 'television', 'anim' => 'animation'}
 
 # Slack settings
 SLACK_API_TOKEN = 'abcdefghijklmnopqrstuvwxyz'

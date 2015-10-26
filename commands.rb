@@ -119,8 +119,9 @@ class Commands
   end
   
   def archive_command(rest)
-    if !File.exists?('/Volumes/Media Black/Movies')
-      notify("Hmm, I can't see the Media Black drive.")  # TODO
+    # possibly removable media
+    if !File.exists?(ARCHIVE_ROOT)
+      notify("Hmm, I can't see the archive root #{ARCHIVE_ROOT}.")
       return
     end
 
@@ -146,16 +147,16 @@ class Commands
   
   def help_command(rest)
     msg  = "Here are common things you can say to me:\n"
-    msg << "#{SLACK_CHAT_NAME} archive {#{TARGETS.keys.join(',')}} 1 [2 3 4]\n"
-    msg << "#{SLACK_CHAT_NAME} rip 1[,2,3,4]"
-    msg << "#{SLACK_CHAT_NAME} list\n"
-    msg << "#{SLACK_CHAT_NAME} normalize n (for n, see list)\n"
-    msg << "#{SLACK_CHAT_NAME} rename n Some new name (for n, see list)\n"
-    msg << "#{SLACK_CHAT_NAME} space\n\n"
+    msg << ">#{SLACK_CHAT_NAME} archive {#{TARGETS.keys.join(',')}} 1 [2 3 4]\n"
+    msg << ">#{SLACK_CHAT_NAME} rip 1[,2,3,4]"
+    msg << ">#{SLACK_CHAT_NAME} list\n"
+    msg << ">#{SLACK_CHAT_NAME} normalize n (for n, see list)\n"
+    msg << ">#{SLACK_CHAT_NAME} rename n Some new name (for n, see list)\n"
+    msg << ">#{SLACK_CHAT_NAME} space\n\n"
     msg << "Here are my other commands:\n"
-    msg << "#{SLACK_CHAT_NAME} confirm_repeat\n"
-    msg << "#{SLACK_CHAT_NAME} eject\n"
-    msg << "#{SLACK_CHAT_NAME} encode abcde (where abcde is an existing folder code)\n"
+    msg << ">#{SLACK_CHAT_NAME} confirm_repeat\n"
+    msg << ">#{SLACK_CHAT_NAME} eject\n"
+    msg << ">#{SLACK_CHAT_NAME} encode abcde (where abcde is an existing folder code)\n"
 
     notify(msg)
   end
