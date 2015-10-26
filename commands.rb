@@ -85,7 +85,7 @@ class Commands
     notify_movie_list
   end
   
-  def normalize_command(rest)
+  def title_command(rest)
     files = Dir["#{DONE_ROOT}/*.m4v"].sort
     
     if rest == 'all'
@@ -154,7 +154,7 @@ class Commands
     msg << ">#{SLACK_CHAT_NAME} archive {#{ARCHIVE_TARGETS.keys.join(',')}} 1 [2 3 4]\n"
     msg << ">#{SLACK_CHAT_NAME} rip 1[,2,3,4]"
     msg << ">#{SLACK_CHAT_NAME} list\n"
-    msg << ">#{SLACK_CHAT_NAME} normalize n (for n, see list)\n"
+    msg << ">#{SLACK_CHAT_NAME} title n (for n, see list)\n"
     msg << ">#{SLACK_CHAT_NAME} rename n Some new name (for n, see list)\n"
     msg << ">#{SLACK_CHAT_NAME} space\n\n"
     msg << "Here are my other commands:\n"
