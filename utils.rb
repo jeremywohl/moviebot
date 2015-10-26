@@ -51,6 +51,8 @@ LOG_MUTEX = Mutex.new
 
 # log stuff
 def log(channel, msg, opts={})
+  return if channel == :debug && LOG_DEBUG == false
+
   tag = case channel
   when :info
     ' INFO'
@@ -62,8 +64,17 @@ def log(channel, msg, opts={})
 
   prefix = "[#{Time.now.to_s} #{tag}]"
 
+  msgs = case msg
+  when String
+    msg.lines
+  when Array
+    msg
+  else
+    raise 'msg must be an Array or String'
+  end
+
   LOG_MUTEX.synchronize do
-    puts "#{prefix} #{msg}"
+    msgs.each { |m| puts "#{prefix} #{m.chomp}" }
 
     if opts.has_key?(:exception)
       e = opts[:exception]

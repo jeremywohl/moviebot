@@ -38,7 +38,7 @@ class DiscSpinner
 
     mkv_cmd = MKV_LIST % { minlength: MKV_SCAN_MINLENGTH * 60 }
     external(mkv_cmd).lines.each do |line|
-      #log :info, line
+      log :debug, line
       case line
       when /MSG:5073,260,0,"Your temporary key has expired/
         notify("Hmm, your MakeMKV key is expired.  Please update in the MakeMKV app, separately.")
@@ -185,9 +185,8 @@ class DiscSpinner
       notify("Starting to rip \"#{track.name}\" (with #{free_space}G free space).")
       
       rip_cmd = "#{MKV_RIP % { minlength: MKV_SCAN_MINLENGTH * 60 }} #{track.title} \"#{mkv_dir}\""
-      log :info, rip_cmd
       results, timing = external_with_timing rip_cmd
-      log :info, results
+      log :debug, results
       
       if results.lines.grep(/Copy complete/).first =~ /failed/
         notify("Sorry, the rip of \"#{track.name}\" failed (took #{timing}).  Try cleaning the disc and refeeding?")

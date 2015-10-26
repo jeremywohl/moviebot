@@ -28,8 +28,8 @@ class Mp4Spinner
 
     notify("Starting the encode of \"#{movie.base}.m4v\" (with #{free_space}G free space).")
     
-    result, timing = external_with_timing #{encode_cmd}
-    log :info, result
+    result, timing = external_with_timing encode_cmd
+    log :debug, result
     
     notify("Finished encoding of \"#{movie.base}.m4v\" (took #{timing}).")
     

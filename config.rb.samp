@@ -31,3 +31,6 @@ HANDBRAKE_PROFILE = 'High Profile'
 MAKEMKV_BIN = '/Applications/MakeMKV.app/Contents/MacOS/makemkvcon'
 MKV_SCAN_MINLENGTH = 20     # minutes
 MKV_RIP_MINLENGTH  = 50     # minutes
+
+# Gory details?
+LOG_DEBUG = false
