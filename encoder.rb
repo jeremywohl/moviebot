@@ -51,7 +51,7 @@ Thread.new do
   begin
     MP4_SPINNER.go
   rescue => e
-    log :info, 'mp4spinner died', exception: e
+    log :error, 'mp4spinner died', exception: e
     notify("I (mp4spinner) die!", poke_channel: true)
   end
 end
