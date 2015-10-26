@@ -68,8 +68,9 @@ class Slack
     @read_thread = Thread.new do
       loop do
         begin
-          @driver.parse(@tls.readpartial(16 * 1024))  # 16K max msgs
+          @driver.parse(@tls.readpartial(16 * 1024))  # Slack docs say 16K max msgs
         rescue EOFError
+          log :info, "slack has closed our connection"
           break
         rescue => e
           log :error, 'failure in Slack read loop', exception: e
