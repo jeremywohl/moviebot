@@ -18,7 +18,11 @@ class Commands
     rest.strip! if rest
     
     if @commands.has_key? cmd
-      self.send(@commands[cmd], rest)
+      begin
+        self.send(@commands[cmd], rest)
+      rescue => e
+        log :error, "slack command [#{cmd}] failed", exception: e
+      end
     else
       huh?
     end
@@ -131,7 +135,7 @@ class Commands
     
     files = Dir["#{DONE_ROOT}/*.m4v"].sort
     
-    if !TARGETS.keys.include?(target) || !indices.all? { |x| x > 0 && x <= files.length }
+    if !ARCHIVE_TARGETS.keys.include?(target) || !indices.all? { |x| x > 0 && x <= files.length }
       huh?
     else
       indices.each do |index|
@@ -147,7 +151,7 @@ class Commands
   
   def help_command(rest)
     msg  = "Here are common things you can say to me:\n"
-    msg << ">#{SLACK_CHAT_NAME} archive {#{TARGETS.keys.join(',')}} 1 [2 3 4]\n"
+    msg << ">#{SLACK_CHAT_NAME} archive {#{ARCHIVE_TARGETS.keys.join(',')}} 1 [2 3 4]\n"
     msg << ">#{SLACK_CHAT_NAME} rip 1[,2,3,4]"
     msg << ">#{SLACK_CHAT_NAME} list\n"
     msg << ">#{SLACK_CHAT_NAME} normalize n (for n, see list)\n"
