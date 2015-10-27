@@ -32,8 +32,10 @@ log :info, 'start'
 
 SLACK = Slack.new
 
-trap "SIGINT" do
-  SLACK.closeup
+%w( INT TERM ).each do |sig|
+  trap sig do
+    SLACK.closeup
+  end
 end
 
 SLACK.go
