@@ -66,10 +66,10 @@ _Encoding happens independently of ripping, queue any number of discs._
 > @channel Ejecting!  Feed me another!  
 >  
 > **moviebot**  
-> Starting the encode of "Games_of_Nonces_t00.m4v" (with 250G free space).  
+> Starting the encode of "What_Happens_In_A_Place_t00.m4v" (with 250G free space).  
 >  
 > **moviebot**  
-> Finished encoding of "Games_of_Nonces_t00.m4v" (took 1h:33m).  
+> Finished encoding of "What_Happens_In_A_Place_t00.m4v" (took 1h:33m).  
 >  
 > **jeremy**  
 > movie space  
