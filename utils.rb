@@ -1,9 +1,9 @@
-# movie volume free space in gibabytes
+# Movie volume free space in gibabytes.
 def free_space
   `df -H #{MOVIES_ROOT}`.lines[-1].split[3].to_i
 end
 
-# e.g. 3s or 15m:20s or 2h:21m
+# Format the interval between now and +tstart+, e.g. 3s or 15m:20s or 2h:21m.
 def format_time_diff(tstart)
   diff = Time.now - tstart
   if diff < 60
@@ -15,17 +15,17 @@ def format_time_diff(tstart)
   end
 end
 
-# convenience method for Slack notifications
+# Convenience method for Slack notifications.
 def notify(msg, opts={})
   SLACK.notify(msg, opts)
 end
 
-# run a shell command, capturing STDOUT
+# Run a shell command, capturing STDOUT.
 def external(cmd, opts={})
   _external(cmd, opts)
 end
 
-# run a shell command, returning STDOUT capture & timing string
+# Run a shell command, returning STDOUT capture & timing string.
 def external_with_timing(cmd, opts={})
   opts[:timing] = true
   _external(cmd, opts)
@@ -51,7 +51,15 @@ end
 
 LOG_MUTEX = Mutex.new
 
-# log stuff
+# Send messages to STDOUT with timestamp and +channel+ :info, :error or
+# :debug.  Logs to :debug are a noop when config var LOG_DEBUG = false.
+# +msg+ may a multi-line string (and will be split across log messages)
+# or array of strings. An exception passed in opts (e.g. exception: e)
+# gets a formatted backtrace.
+#
+#   log :info, "hello"
+#
+#   log :error, "this is awful!", exception: e
 def log(channel, msg, opts={})
   return if channel == :debug && LOG_DEBUG == false
 
