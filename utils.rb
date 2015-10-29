@@ -83,3 +83,18 @@ def log(channel, msg, opts={})
     end
   end
 end
+
+# Generate a plural phrase, using +singular+ when +count+ is 1,
+# and +plural+ otherwise.
+#
+#   pluralize(1, 'person', 'people)   # => 1 person
+#
+#   pluralize(2, 'person', 'people')  # => 2 people
+#
+#   pluralize(3, 'person', 'users')   # => 3 users
+#
+#   pluralize(0, 'person', 'people')  # => 0 people
+def pluralize(count, singular, plural)
+  word = count == 1 ? singular : plural
+  "#{count || 0} #{word}"
+end
