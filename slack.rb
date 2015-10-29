@@ -79,10 +79,14 @@ class Slack
       end
     end
     
+    ws_keepalive = Concurrent::TimerTask.new(execution_interval: 30) { self.keepalive }
+    ws_keepalive.execute
+
     @wsready.set(true)
     self.notify('Waking up.')
     
     @read_thread.join
+    ws_keepalive.shutdown
   end
 
   def closeup
@@ -105,6 +109,12 @@ class Slack
   # used by websocket-driver
   def write(s)
     @tls.write(s)
+  end
+
+  def keepalive
+    @mutex.synchronize do
+      @driver.ping
+    end
   end
 
   # tell Slack channel something; accepts /poke_channel: true/ to alert the channel.
