@@ -34,6 +34,8 @@ end
 def _external(cmd, opts={})
   log :info, "starting #{cmd}" if !opts.has_key?(:silent)
 
+  cmd << " 2>&1"
+
   start = Time.now
   result = %x(#{cmd})
   diff = format_time_diff(start)
