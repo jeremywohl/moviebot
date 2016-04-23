@@ -152,7 +152,7 @@ class Commands
   def help_command(rest)
     msg  = "Here are common things you can say to me:\n"
     msg << ">#{SLACK_CHAT_NAME} archive {#{ARCHIVE_TARGETS.keys.join(',')}} 1 [2 3 4]\n"
-    msg << ">#{SLACK_CHAT_NAME} rip 1[,2,3,4]"
+    msg << ">#{SLACK_CHAT_NAME} rip 1[,2,3,4]\n"
     msg << ">#{SLACK_CHAT_NAME} list\n"
     msg << ">#{SLACK_CHAT_NAME} title n (for n, see list)\n"
     msg << ">#{SLACK_CHAT_NAME} rename n Some new name (for n, see list)\n"
