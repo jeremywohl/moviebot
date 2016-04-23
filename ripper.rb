@@ -55,9 +55,12 @@ class DiscSpinner
         code  = $2.to_i
         value = $3.tr('"', '')
         
-        time = value if code == 9
-        size = value[/([\.\d]+)/, 1] if code == 10
-        if code == 27
+        case code
+        when 9
+          time = value
+        when 10
+          size = value.gsub(/\s+/, '').gsub(/B$/, '')
+        when 27
           o = OpenStruct.new(disc: disc, title: title, name: value, time: time, size: size)
           t = time.split(':')
           o.time_in_minutes = t[0].to_i * 60 + t[1].to_i
@@ -148,14 +151,14 @@ class DiscSpinner
     elsif @tracks.length == 1 || min_tracks.length == 1
       track = min_tracks.first || @tracks.first
       msg = "There's only one show-length track, so I'm going to start ripping it now.\n"
-      msg << "1: #{track.name} [#{track.time}, #{track.size}G]\n"
+      msg << "1: #{track.name} [#{track.time}, #{track.size}]\n"
       notify(msg)
       @queue << track
       set_state :ripping
     else
       msg = "This disc contains the following tracks:\n"
       @tracks.each_with_index do |track, index|
-        msg << "#{index+1}) #{track.name} [#{track.time}, #{track.size}G]\n"
+        msg << "#{index+1}) #{track.name} [#{track.time}, #{track.size}]\n"
       end
       msg << %(You can tell me to "rip 1[,2,3,..]" or "rip all" or "eject".)
       notify(msg, poke_channel: true)
