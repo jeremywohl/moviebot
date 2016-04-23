@@ -26,7 +26,7 @@ class Mp4Spinner
       return
     end
 
-    encodes_expl = sprintf("%s %s left, ", @queue.size, pluralize(@queue.size, 'other', 'others'))
+    encodes_expl = sprintf("%s left, ", pluralize(@queue.size, 'other', 'others'))
     encodes_left = @queue.size > 0 ? encodes_expl : ''
 
     notify("Starting the encode of \"#{movie.base}.m4v\" (#{encodes_left}with #{free_space}G free space).")
