@@ -44,7 +44,7 @@ class DiscSpinner
         notify("Hmm, your MakeMKV key is expired.  Please update in the MakeMKV app, separately.")
         eject
         return
-      when /MSG:5055,0,0,"Evaluation period has expired/
+      when /MSG:5055,0,0,"Evaluation period has expired/, /MSG:5021,260,1,"This application version is too old./
         notify("Hmm, your MakeMKV evaluation period is expired.  Please update the MakeMKV app.")
         eject
         return
