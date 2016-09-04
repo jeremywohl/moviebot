@@ -163,19 +163,19 @@ Start 'er up.
 
     # ./start
 
-At this point, you should see action in your Slack client / web page.  If not, something is terribly, terribly wrong.  Cheers!
+At this point, you should see action in your Slack desktop client or web page.
 
 > **moviebot**  
 > Waking up.
-
-(Equally exciting is stopping!)
-
-    # ./stop
 
 Now throw a disc into your optical drive.  After it works a bit you should see some results.
 
 > **moviebot**  
 > Ooh, a new disc!
+
+Finally, when you need to shut it down:
+
+    # ./stop
 
 # Commands
 

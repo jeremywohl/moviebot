@@ -2,8 +2,9 @@
 # Disc automata
 #
 
-MKV_LIST = "#{MAKEMKV_BIN} --minlength=%{minlength} --robot info disc:0"
-MKV_RIP  = "#{MAKEMKV_BIN} --minlength=%{minlength} --robot mkv disc:0"
+TRACK_LENGTH   = 9
+TRACK_SIZE     = 10
+TRACK_FILENAME = 27
 
 class DiscSpinner
 
@@ -22,50 +23,49 @@ class DiscSpinner
   # utils
   #
   
-  def what_device
-    external('/usr/bin/drutil status', silent: true).lines.grep(/Name:/).first[/Name:\s+(.+)$/, 1]
-  end
-  
-  def disc_present
-    external('/usr/bin/drutil status', silent: true).lines.grep(/No Media/).empty?
-  end
-
   def fetch_tracks
     @tracks = []
     disc = ''
     time = ''
     size = 0
 
-    mkv_cmd = MKV_LIST % { minlength: MKV_SCAN_MINLENGTH * 60 }
-    external(mkv_cmd).lines.each do |line|
+    PLATFORM.disc_list.lines.each do |line|
       log :debug, line
+
       case line
+
+      # failure cases
       when /MSG:5073,260,0,"Your temporary key has expired/
         notify("Hmm, your MakeMKV key is expired.  Please update in the MakeMKV app, separately.")
         eject
-        return
+        return false
       when /MSG:5055,0,0,"Evaluation period has expired/, /MSG:5021,260,1,"This application version is too old./
         notify("Hmm, your MakeMKV evaluation period is expired.  Please update the MakeMKV app.")
         eject
-        return
+        return false
+
+      # disc name
       when /^CINFO:30,0,\"(.+)\"$/
         disc  = $1
+
+      # track entry
       when /^TINFO:(\d+),(\d+),\d+,(.+)$/
         title = $1
         code  = $2.to_i
         value = $3.tr('"', '')
         
         case code
-        when 9
+        when TRACK_LENGTH
           time = value
-        when 10
+        when TRACK_SIZE
           size = value.gsub(/\s+/, '').gsub(/B$/, '')
-        when 27
+        when TRACK_FILENAME
           o = OpenStruct.new(disc: disc, title: title, name: value, time: time, size: size)
           t = time.split(':')
           o.time_in_minutes = t[0].to_i * 60 + t[1].to_i
           @tracks << o
         end
+      
       end
     end
     
@@ -73,6 +73,8 @@ class DiscSpinner
       @prevsig = @currsig
       @currsig = make_disc_signature
     end
+    
+    true
   end
   
   def make_disc_signature
@@ -85,7 +87,7 @@ class DiscSpinner
 
   def eject
     set_state :ejecting
-    external '/usr/bin/drutil eject'
+    PLATFORM.eject
     set_state :idle
   end
   
@@ -127,18 +129,18 @@ class DiscSpinner
   end
   
   def idle_state
-    if disc_present
+    if PLATFORM.disc_present?
       set_state :present
       @queue = Queue.new
     else
-      sleep 10
+      PLATFORM.sleep_idle
     end
   end
   
   def present_state
     notify("Ooh, a new disc!")
     
-    fetch_tracks
+    return if !fetch_tracks
     
     min_tracks = @tracks.select { |t| t.time_in_minutes > MKV_RIP_MINLENGTH }
     
@@ -157,8 +159,8 @@ class DiscSpinner
       set_state :ripping
     else
       msg = "This disc contains the following tracks:\n"
-      @tracks.each_with_index do |track, index|
-        msg << "#{index+1}) #{track.name} [#{track.time}, #{track.size}]\n"
+      @tracks.each_with_index do |track_, index|
+        msg << "#{index+1}) #{track_.name} [#{track_.time}, #{track_.size}]\n"
       end
       msg << %(You can tell me to "rip 1[,2,3,..]" or "rip all" or "eject".)
       notify(msg, poke_channel: true)
@@ -169,12 +171,12 @@ class DiscSpinner
   end
   
   def asking_state
-    sleep 1  # slow wait
+    PLATFORM.sleep_slow_wait
   end
   
   # so a Slack command (different thread) doesn't conflict with :idle
   def ejecting_state
-    sleep 1
+    PLATFORM.sleep_slow_wait
   end
   
   def ripping_state
@@ -187,8 +189,7 @@ class DiscSpinner
       Dir.mkdir(mkv_dir)
       notify("Starting to rip \"#{track.name}\" (with #{free_space}G free space).")
       
-      rip_cmd = "#{MKV_RIP % { minlength: MKV_SCAN_MINLENGTH * 60 }} #{track.title} \"#{mkv_dir}\""
-      results, timing = external_with_timing rip_cmd
+      results, timing = PLATFORM.disc_rip(track.title, mkv_dir)
       log :debug, results
       
       if results.lines.grep(/Copy complete/).first =~ /failed/

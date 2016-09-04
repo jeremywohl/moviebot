@@ -17,7 +17,7 @@ class Mover
 
   def move(move)
     cmd = "mv '#{move.source}' '#{ARCHIVE_ROOT}/#{ARCHIVE_TARGETS[move.target]}'"
-    dummy, timing = external_with_timing cmd
+    _, timing = external_with_timing cmd
 
     notify("Archived \"#{File.basename(move.source, '.*')}\" to #{move.target} (took #{timing}).")
   end

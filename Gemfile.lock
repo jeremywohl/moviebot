@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     concurrent-ruby (1.0.1)
+    minitest (5.8.3)
     websocket-driver (0.6.3)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.2)
@@ -11,6 +12,7 @@ PLATFORMS
 
 DEPENDENCIES
   concurrent-ruby
+  minitest
   websocket-driver
 
 BUNDLED WITH

@@ -18,6 +18,7 @@ require 'concurrent'
 require_relative 'config'
 require_relative 'title_casing'
 require_relative 'utils'
+require_relative 'platform'
 
 require_relative 'commands'
 require_relative 'encoder'
