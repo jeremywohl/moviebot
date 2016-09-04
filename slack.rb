@@ -2,22 +2,24 @@
 # slack robot
 #
 
-# TODO: connection restarts
-
 class Slack
 
   RTM_START_URL = "https://slack.com/api/rtm.start?token=#{SLACK_API_TOKEN}&no_unreads=true&simple_latest=true"
 
   def initialize
-    @mutex   = Mutex.new
-    @wsready = Concurrent::IVar.new
-
-    @msg_id = 1  # correlate echo'd Slack messages with unique id
+    @mutex    = Mutex.new
+    @pending  = Concurrent::Array.new
+    @wsready  = false
+    @msg_id   = 1  # correlate echo'd Slack messages with unique id
+    @shutdown = false
   end
 
   def go
-    fetch_slack_endpoint
-    loop_websocket
+    0.step do |i|
+      fetch_slack_endpoint
+      loop_websocket(i)
+      break if @shutdown
+    end
   end
 
   # Get real-time API endpoint (and other details)
@@ -48,7 +50,7 @@ class Slack
     @ws_uri     = URI(data['url'])
   end
 
-  def loop_websocket
+  def loop_websocket(socket_count)
     tcp = TCPSocket.new(@ws_uri.host, 443)
     @tls = OpenSSL::SSL::SSLSocket.new(tcp)
     @tls.connect
@@ -82,14 +84,27 @@ class Slack
     ws_keepalive = Concurrent::TimerTask.new(execution_interval: 30) { self.keepalive }
     ws_keepalive.execute
 
-    @wsready.set(true)
-    self.notify('Waking up.')
+    @mutex.synchronize { @wsready = true }
+    
+    self.send_pending
+
+    if socket_count == 0
+      self.notify('Waking up.')
+    else
+      self.notify('Oops -- reconnected to Slack.  Sorry if we missed anything.')
+    end
     
     @read_thread.join
+
+    @mutex.synchronize { @wsready = false }
     ws_keepalive.shutdown
   end
 
   def closeup
+    Thread.new { SLACK.notify('Goodbye.') }
+    sleep 1
+
+    @shutdown = true
     @read_thread.kill
   end
 
@@ -127,13 +142,25 @@ class Slack
         msg = "<!channel> " << msg
       end
     end
-
+    
+    @pending << msg
+    send_pending
+  end
+  
+  def send_pending
     @mutex.synchronize do
-      @wsready.wait
+      return if !@wsready
 
-      out = { id: @msg_id, type: 'message', channel: @channel_id, text: msg }
-      @driver.text(out.to_json)
-      @msg_id += 1
+      while (msg = @pending.shift)
+        out = { id: @msg_id, type: 'message', channel: @channel_id, text: msg }
+        
+        if @driver.text(out.to_json) == false
+          @pending.unshift msg
+          break
+        end
+        
+        @msg_id += 1
+      end
     end
   end
 
