@@ -15,7 +15,7 @@ class TestRipper < MiniTest::Test
 MSG:5021,260,1,"This application version is too old.  More verbiage here.  Call your mother."
     EOS
     
-    sleep 1
+    sleep 0.2
 
     assert_match(/^Hmm, your MakeMKV evaluation period is expired/, SLACK.pop)
     assert_equal(false, PLATFORM.disc_present?)
@@ -32,7 +32,7 @@ TINFO:1,10,0,"29.0 GB"
 TINFO:1,27,0,"A_Story_t01.mkv"
     EOS
     
-    sleep 1
+    sleep 0.2
 
     slack_response = <<-EOS
 This disc contains the following tracks:
