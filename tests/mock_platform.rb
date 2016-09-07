@@ -2,8 +2,6 @@
 # Platform mock
 #
 
-require 'fileutils'
-
 class PlatformMock
 
   attr :disc_in_drive

@@ -3,8 +3,7 @@
 ##
 
 # Where should we do our work?
-MOVIES_ROOT = Dir.mktmpdir
-at_exit { FileUtils.remove_entry MOVIES_ROOT }
+# (see common.rb for MOVIES_ROOT assignment)
 
 # Where do you archive your movies? (optional)
 ARCHIVE_ROOT    = '/archive/path/to/movies'

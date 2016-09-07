@@ -1,3 +1,7 @@
+# set here, so we live outside MiniTest's use of at_exit (LIFO)
+MOVIES_ROOT ||= Dir.mktmpdir
+at_exit { FileUtils.remove_entry MOVIES_ROOT }
+
 require 'ostruct'
 require 'thread'
 require 'securerandom'
