@@ -26,7 +26,7 @@ class Encoder
     encodes_expl = sprintf("%s left, ", pluralize(@queue.size, 'other', 'others'))
     encodes_left = @queue.size > 0 ? encodes_expl : ''
 
-    notify("Starting the encode of \"#{movie.base}.m4v\" (#{encodes_left}with #{free_space}G free space).")
+    notify("Starting the encode of \"#{movie.base}.m4v\" (#{encodes_left}with #{PLATFORM.free_space}G free space).")
     
     encode_fn = "#{ENCODING_ROOT}/#{SecureRandom.hex[0...5]}-#{movie.base}.m4v"
     

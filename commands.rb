@@ -146,7 +146,7 @@ class Commands
   end
   
   def space_command(rest)
-    notify("I have #{free_space}G of free space!")
+    notify("I have #{PLATFORM.free_space}G of free space!")
   end
   
   def help_command(rest)

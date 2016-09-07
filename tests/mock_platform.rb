@@ -49,6 +49,10 @@ class PlatformMock
       sleep 0.1
     end
   end
+  
+  def free_space
+    22
+  end
 
   #
   # mock controls

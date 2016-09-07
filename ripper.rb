@@ -187,7 +187,7 @@ class Ripper
       mkv_dir = "#{RIPPING_ROOT}/#{SecureRandom.hex[0...5]}-#{File.basename(track.name, ".*")}"
       
       Dir.mkdir(mkv_dir)
-      notify("Starting to rip \"#{track.name}\" (with #{free_space}G free space).")
+      notify("Starting to rip \"#{track.name}\" (with #{PLATFORM.free_space}G free space).")
       
       results, timing = PLATFORM.disc_rip(track.title, mkv_dir)
       log :debug, results

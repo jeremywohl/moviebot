@@ -1,8 +1,3 @@
-# Movie volume free space in gibabytes.
-def free_space
-  `df -H #{MOVIES_ROOT}`.lines[-1].split[3].to_i
-end
-
 # Format the interval between now and +tstart+, e.g. 3s or 15m:20s or 2h:21m.
 def format_time_diff(tstart)
   diff = Time.now - tstart
