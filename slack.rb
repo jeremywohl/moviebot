@@ -19,6 +19,7 @@ class Slack
       fetch_slack_endpoint
       loop_websocket(i)
       break if @shutdown
+      sleep 1
     end
   end
 
