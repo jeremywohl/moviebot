@@ -2,6 +2,7 @@ require 'ostruct'
 require 'thread'
 require 'securerandom'
 require 'minitest/autorun'
+require 'fileutils'
 
 require_relative 'mock_config'
 require_relative '../title_casing'
@@ -16,3 +17,5 @@ require_relative '../ripper'
 require_relative '../mover'
 
 SLACK = SlackMock.new
+
+FileUtils.mkdir([ RIPPING_ROOT, ENCODING_ROOT, DONE_ROOT ])

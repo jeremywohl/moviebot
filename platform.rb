@@ -5,6 +5,8 @@
 MKV_LIST = "#{MAKEMKV_BIN} --minlength=%{minlength} --robot info disc:0"
 MKV_RIP  = "#{MAKEMKV_BIN} --minlength=%{minlength} --robot mkv disc:0"
 
+ENCODE = %(#{HANDBRAKE_BIN} --input "%{input}" --output "%{output}" --preset '#{HANDBRAKE_PROFILE}')
+
 class MacPlatform
 
   def disc_present?
@@ -23,6 +25,11 @@ class MacPlatform
   def disc_rip(title, dest_dir, minlength=MKV_SCAN_MINLENGTH * 60)
     rip_cmd = "#{MKV_RIP % { minlength: minlength }} #{title} \"#{dest_dir}\""
     results, timing = external_with_timing rip_cmd
+  end
+
+  def encode(input, output)
+    encode_cmd = ENCODE % { input: input, output: output }
+    result, timing = external_with_timing encode_cmd
   end
 
   def sleep_idle

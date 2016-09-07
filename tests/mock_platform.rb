@@ -2,6 +2,8 @@
 # Platform mock
 #
 
+require 'fileutils'
+
 class PlatformMock
 
   attr :disc_in_drive
@@ -31,6 +33,11 @@ class PlatformMock
   end
   
   def disc_rip(title, dest_dir, minlength=MKV_SCAN_MINLENGTH * 60)
+  end
+
+  def encode(input, output)
+    FileUtils.touch(output)
+    return "", 0
   end
 
   def sleep_idle
