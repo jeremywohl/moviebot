@@ -16,7 +16,7 @@ class TestEncoder < MiniTest::Test
     FileUtils.touch("#{RIPPING_ROOT}/xyz/title00.mkv")
 
     movie = OpenStruct.new(mkv_path: "#{RIPPING_ROOT}/xyz/title00.mkv", base: "title00")
-    MP4_SPINNER.add_movie(movie)
+    ENCODER.add_movie(movie)
     sleep 0.1
     
     assert_equal(false, File.exist?("#{RIPPING_ROOT}/xyz/title00.mkv"))
@@ -28,7 +28,7 @@ class TestEncoder < MiniTest::Test
   
   def test_absent_rip
     movie = OpenStruct.new(mkv_path: "abc.mkv", base: "abc")
-    MP4_SPINNER.add_movie(movie)
+    ENCODER.add_movie(movie)
     sleep 0.1
     
     assert_match(/^Hmmm, abc.mkv doesn't seem to exist/, SLACK.pop)
@@ -42,7 +42,7 @@ class TestEncoder < MiniTest::Test
     FileUtils.touch("#{RIPPING_ROOT}/abc/title00.mkv")
 
     movie = OpenStruct.new(mkv_path: "#{RIPPING_ROOT}/abc/title00.mkv", base: "title00")
-    MP4_SPINNER.add_movie(movie)
+    ENCODER.add_movie(movie)
     sleep 0.1
     
     assert_equal(true, File.exist?("#{DONE_ROOT}/title00.m4v"))
@@ -52,7 +52,7 @@ class TestEncoder < MiniTest::Test
     FileUtils.touch("#{RIPPING_ROOT}/def/title00.mkv")
 
     movie = OpenStruct.new(mkv_path: "#{RIPPING_ROOT}/def/title00.mkv", base: "title00")
-    MP4_SPINNER.add_movie(movie)
+    ENCODER.add_movie(movie)
     sleep 0.1
 
     files = Dir["#{DONE_ROOT}/*.m4v"]

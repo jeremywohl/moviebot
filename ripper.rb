@@ -6,7 +6,7 @@ TRACK_LENGTH   = 9
 TRACK_SIZE     = 10
 TRACK_FILENAME = 27
 
-class DiscSpinner
+class Ripper
 
   def initialize
     @states   = Hash[self.methods.grep(/_state$/).map   { |m| [ m.to_s.gsub(/_state$/,   ''), m ] }]
@@ -202,7 +202,7 @@ class DiscSpinner
         notify("Finished ripping of \"#{track.name}\" (took #{timing}).")
       
         movie = OpenStruct.new(mkv_path: "#{mkv_dir}/#{track.name}", base: File.basename(track.name, ".*"))
-        MP4_SPINNER.add_movie(movie)
+        ENCODER.add_movie(movie)
       end
     end
 
@@ -217,12 +217,12 @@ class DiscSpinner
   
 end
 
-DISC_SPINNER = DiscSpinner.new
+RIPPER = Ripper.new
 Thread.new do
   begin
-    DISC_SPINNER.go
+    RIPPER.go
   rescue => e
-    log :error, 'discspinner died', exception: e
-    notify("I (discspinner) die!", poke_channel: true)
+    log :error, 'ripper died', exception: e
+    notify("I (ripper) die!", poke_channel: true)
   end
 end

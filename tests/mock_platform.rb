@@ -58,7 +58,7 @@ class PlatformMock
 
   def reset_state
     eject
-    DISC_SPINNER.set_state :idle
+    RIPPER.set_state :idle
     sleep_slow_wait
   end
 

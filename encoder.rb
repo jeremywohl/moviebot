@@ -2,7 +2,7 @@
 # Encoding automata
 #
 
-class Mp4Spinner
+class Encoder
   
   attr :queue  # for testing
   
@@ -53,12 +53,12 @@ class Mp4Spinner
   
 end
 
-MP4_SPINNER = Mp4Spinner.new
+ENCODER = Encoder.new
 Thread.new do
   begin
-    MP4_SPINNER.go
+    ENCODER.go
   rescue => e
-    log :error, 'mp4spinner died', exception: e
-    notify("I (mp4spinner) die!", poke_channel: true)
+    log :error, 'encoder died', exception: e
+    notify("I (encoder) die!", poke_channel: true)
   end
 end

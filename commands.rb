@@ -30,25 +30,25 @@ class Commands
   
   def eject_command(rest)
     notify("Ejecting!")
-    DISC_SPINNER.eject
+    RIPPER.eject
   end
   
   def rip_command(rest)
     if rest == 'all'
-      DISC_SPINNER.add_tracks(DISC_SPINNER.tracks)
+      RIPPER.add_tracks(RIPPER.tracks)
     elsif rest =~ /[\d,]+/
       toq = []
       rest.split(',').each do |digits|
         next if digits !~ /\d+/
-        next if digits.to_i > DISC_SPINNER.tracks.length
-        toq << DISC_SPINNER.tracks[digits.to_i - 1]
+        next if digits.to_i > RIPPER.tracks.length
+        toq << RIPPER.tracks[digits.to_i - 1]
       end
-      DISC_SPINNER.add_tracks(toq)
+      RIPPER.add_tracks(toq)
     end
   end
   
   def confirm_repeat_command(rest)
-    DISC_SPINNER.confirm_repeat
+    RIPPER.confirm_repeat
   end
   
   def encode_command(rest)
@@ -57,7 +57,7 @@ class Commands
       mkv = Dir["#{RIPPING_ROOT}/#{rest}-*/*.mkv"].first
       if mkv
         movie = OpenStruct.new(mkv_path: mkv, base: File.basename(mkv, ".*"))
-        MP4_SPINNER.add_movie(movie)
+        ENCODER.add_movie(movie)
         notify("OK, added \"#{File.basename(mkv)}\" to my encode queue.")
         found = true
       end
