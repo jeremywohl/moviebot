@@ -71,7 +71,7 @@ class Commands
   def notify_movie_list
     files = Dir["#{DONE_ROOT}/*.m4v"].sort
     if files.empty?
-      notify("There are no completed shows at the mo.")
+      notify("There are no completed shows at the moment.")
     else
       msg = "Here are your completed shows:\n"
       files.each_with_index do |path, index|
