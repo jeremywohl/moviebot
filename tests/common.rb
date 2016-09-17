@@ -22,4 +22,4 @@ require_relative '../mover'
 
 SLACK = SlackMock.new
 
-FileUtils.mkdir([ RIPPING_ROOT, ENCODING_ROOT, DONE_ROOT ])
+FileUtils.makedirs([ RIPPING_ROOT, ENCODING_ROOT, DONE_ROOT ])
