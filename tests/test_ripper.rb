@@ -8,6 +8,7 @@ class TestRipper < MiniTest::Test
 
   def teardown
     PLATFORM.reset_state
+    SLACK.clear
   end
 
   def test_app_too_old

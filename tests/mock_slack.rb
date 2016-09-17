@@ -10,6 +10,10 @@ class SlackMock
     @history = []
   end
   
+  def clear
+    @history.clear
+  end
+  
   def pop
     @history.pop
   end
