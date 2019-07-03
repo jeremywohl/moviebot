@@ -23,10 +23,14 @@ NON_CAPITAL_WORDS = Hash[non_caps.map { |x| [x, nil] }]
 
 # Remove tracking bits, ours and makemkv's.
 def clean_fn(s)
-  s = s.gsub(/^(\h{5}-)/, '')       # moviebot's random code
-  s = s.gsub(/(_t\d{2})$/, '\2')    # makemkv's title ID
-  s = s.gsub(/_/, ' ')              # underscores -> spaces
-  s = s.gsub(/\s{2,}/, ' ')         # redundant whitespace
+  # remove
+  s = s.gsub(/^(\h{5}-)/, '')         # moviebot's random code
+  s = s.gsub(/-FPL_MainFeature/, '')  # common extra titling
+
+  # normalize
+  s = s.gsub(/(_t\d{2})$/, '\2')      # makemkv's title ID (_txy -> xy)
+  s = s.gsub(/_/, ' ')                # underscores to spaces
+  s = s.gsub(/\s{2,}/, ' ')           # redundant whitespace
 end
 
 # Title case by standard English rules.

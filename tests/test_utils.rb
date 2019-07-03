@@ -19,10 +19,11 @@ class TestUtils < MiniTest::Test
 
     # title case
     [
-      [ 'Wreck-It_Ralph_t00',     'Wreck It Ralph'         ], # hyphens are hard to distinguish
-      [ 'ALL_CAPS_AND_PER_THING', 'All Caps and per Thing' ],
-      [ "The_King's_Speech",      "The King's Speech"      ], # but we handle apostrophes
-      [ 'abcde-Some_Movie_Name',  'Some Movie Name'        ],
+      [ 'Wreck-It_Ralph_t00',                    'Wreck It Ralph'         ], # hyphens are hard to distinguish
+      [ 'Wreck-It_Ralph_-FPL_MainFeature_t00',   'Wreck It Ralph'         ],
+      [ 'ALL_CAPS_AND_PER_THING',                'All Caps and per Thing' ],
+      [ "The_King's_Speech",                     "The King's Speech"      ], # but we handle apostrophes
+      [ 'abcde-Some_Movie_Name',                 'Some Movie Name'        ],
     ].each do |test|
       assert_equal(test[1], title_case_fn(clean_fn(test[0])))
     end
