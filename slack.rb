@@ -4,7 +4,8 @@
 
 class Slack
 
-  RTM_START_URL = "https://slack.com/api/rtm.start?token=#{SLACK_API_TOKEN}&no_unreads=true&simple_latest=true"
+  RTM_START_URL  = "https://slack.com/api/rtm.start?token=#{SLACK_API_TOKEN}&no_unreads=true&simple_latest=true"
+  MAX_SEND_CHARS = 4_000
 
   def initialize
     @mutex    = Mutex.new
@@ -16,10 +17,15 @@ class Slack
 
   def go
     0.step do |i|
-      fetch_slack_endpoint
-      loop_websocket(i)
+      begin
+        fetch_slack_endpoint
+        loop_websocket(i)
+      rescue
+        # ignore failures
+      end
+
       break if @shutdown
-      sleep 1
+      sleep 1  # TODO: add backoff
     end
   end
 
@@ -72,8 +78,8 @@ class Slack
       loop do
         begin
           @driver.parse(@tls.readpartial(16 * 1024))  # Slack docs say 16K max msgs
-        rescue EOFError
-          log :info, "slack has closed our connection"
+        rescue EOFError => e
+          log :info, "slack has closed our connection", exception: e
           break
         rescue => e
           log :error, 'failure in Slack read loop', exception: e
@@ -81,12 +87,12 @@ class Slack
         end
       end
     end
-    
+
     ws_keepalive = Concurrent::TimerTask.new(execution_interval: 30) { self.keepalive }
     ws_keepalive.execute
 
     @mutex.synchronize { @wsready = true }
-    
+
     self.send_pending
 
     if socket_count == 0
@@ -94,7 +100,7 @@ class Slack
     else
       self.notify('Oops -- reconnected to Slack.  Sorry if we missed anything.')
     end
-    
+
     @read_thread.join
 
     @mutex.synchronize { @wsready = false }
@@ -135,6 +141,7 @@ class Slack
 
   # tell Slack channel something; accepts /poke_channel: true/ to alert the channel.
   def notify(msg, opts={})
+    msg = msg[0...MAX_SEND_CHARS-16]+"...truncating..." if msg.size >= MAX_SEND_CHARS
     if opts[:poke_channel]
       if msg.lines.size > 1
         msg << "\n" if msg[-1] != "\n"
@@ -143,23 +150,23 @@ class Slack
         msg = "<!channel> " << msg
       end
     end
-    
+
     @pending << msg
     send_pending
   end
-  
+
   def send_pending
     @mutex.synchronize do
       return if !@wsready
 
       while (msg = @pending.shift)
         out = { id: @msg_id, type: 'message', channel: @channel_id, text: msg }
-        
+
         if @driver.text(out.to_json) == false
           @pending.unshift msg
           break
         end
-        
+
         @msg_id += 1
       end
     end
