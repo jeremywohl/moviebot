@@ -10,8 +10,6 @@ class PlatformMock
   def initialize
     @disc_in_drive = false
     @mkv_response  = ''
-
-    @lockstep = Mutex.new
   end
 
   def disc_present?
@@ -19,10 +17,8 @@ class PlatformMock
   end
 
   def eject
-    @lockstep.synchronize do
-      @disc_in_drive = false
-      @mkv_response  = ''
-    end
+    @disc_in_drive = false
+    @mkv_response  = ''
     true
   end
   
@@ -39,15 +35,11 @@ class PlatformMock
   end
 
   def sleep_idle
-    @lockstep.synchronize do
-      sleep 0.1
-    end
+    sleep 0.1
   end
   
   def sleep_slow_wait
-    @lockstep.synchronize do
-      sleep 0.1
-    end
+    sleep 0.1
   end
   
   def free_space
@@ -67,10 +59,8 @@ class PlatformMock
   end
 
   def simulate_mkv_with_response(r)
-    @lockstep.synchronize do
-      @mkv_response  = r
-      @disc_in_drive = true
-    end
+    @mkv_response  = r
+    @disc_in_drive = true
   end
 
 end
