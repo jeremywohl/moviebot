@@ -22,7 +22,7 @@ class TestEncoder < MiniTest::Test
     assert_equal(false, File.exist?("#{RIPPING_ROOT}/xyz/title00.mkv"))
     assert_equal(true,  File.exist?("#{DONE_ROOT}/title00.m4v"))
 
-    assert_equal( %|Starting the encode of "title00.m4v" (with 22G free space).|, SLACK.history[-2] )
+    assert_equal( %|Starting the encode of "title00.m4v" (no others queued, with 22G free space).|, SLACK.history[-2] )
     assert_equal( %|Finished encoding of "title00.m4v" (took 0).|, SLACK.history[-1] )
   end
   

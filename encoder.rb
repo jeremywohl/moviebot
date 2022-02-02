@@ -23,8 +23,13 @@ class Encoder
       return
     end
 
-    encodes_expl = sprintf("%s left, ", pluralize(@queue.size, 'other', 'others'))
-    encodes_left = @queue.size > 0 ? encodes_expl : ''
+    encodes_left =
+      case @queue.size
+      when 0
+        'no others queued, '
+      else
+        sprintf("%s left, ", pluralize(@queue.size, 'other', 'others'))
+      end
 
     notify("Starting the encode of \"#{movie.base}.m4v\" (#{encodes_left}with #{PLATFORM.free_space}G free space).")
     
