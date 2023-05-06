@@ -4,23 +4,31 @@
 
 class Slack
 
-  RTM_START_URL  = "https://slack.com/api/rtm.start?token=#{SLACK_API_TOKEN}&no_unreads=true&simple_latest=true"
-  MAX_SEND_CHARS = 4_000
+  SLACK_API_PREFIX_URL            = 'https://slack.com/api/'
+  SLACK_SOCKET_MODE_METHOD        = 'apps.connections.open'
+  SLACK_CONVERSATIONS_LIST_METHOD = 'conversations.list'
+  SLACK_POST_MESSAGEL_METHOD      = 'chat.postMessage'
+
+  MAX_SEND_CHARS  = 4_000
 
   def initialize
-    @mutex    = Mutex.new
-    @pending  = Concurrent::Array.new
-    @wsready  = false
-    @msg_id   = 1  # correlate echo'd Slack messages with unique id
-    @shutdown = false
+    @mutex       = Mutex.new
+    @pending     = Concurrent::Array.new
+    @ws_ready    = false                  # we are connected and ready to chat
+    @ws_refresh  = false                  # the current ws close sequence is a requested Slack socket refresh
+    @msg_id      = 1                      # correlate echo'd Slack messages with unique id
+    @shutdown    = false
+    @channel_id  = nil                    # the movies channel id
   end
 
   def go
     0.step do |i|
       begin
-        fetch_slack_endpoint
-        loop_websocket(i)
-      rescue
+        self.fetch_slack_websocket
+        self.loop_websocket(i)
+      rescue => e
+        puts "Error during processing: #{$!}"
+        puts "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
         # ignore failures
       end
 
@@ -29,44 +37,91 @@ class Slack
     end
   end
 
-  # Get real-time API endpoint (and other details)
-  def fetch_slack_endpoint
-    response = Net::HTTP.get_response(URI.parse(RTM_START_URL))
+  def slack_api(endpoint, token, data, accept_notok=false)
+    headers = {
+                'Content-type'  => 'application/json',
+                'Authorization' => "Bearer #{token}"
+              }
+    response = Net::HTTP.post(URI.join(SLACK_API_PREFIX_URL, endpoint), data.to_json, headers)
 
     if response.code != '200'
       log :error, "Sorry, problem connecting to Slack.  Here's what they said."
       log :error, response.body
-      exit 1
+      exit 1 if accept_notok == false
     end
 
     data = JSON.parse(response.body) rescue {}
 
     if data['ok'] != true
       log :error, "Sorry, problem connecting to Slack.  Here's the error: #{data['error']}.  We die."
-      log :error, data
-      exit 1
+      log :error, "[response] #{response.inspect}"
+      log :error, "[data] #{data.inspect}"
+      exit 1 if accept_notok == false
     end
 
-    channels = data['channels'].select { |c| c['name'] == SLACK_CHANNEL }
-    if channels.empty?
-      log :error, "Sorry, we can't find channel #{SLACK_CHANNEL}.  We die."
-      exit 1
+    return data
+  end
+
+  def events-server
+    class EventsApp
+      def call(env)
+        [200, { 'Content-Type' => 'text/plain' }, ['Hello from embedded Puma instance!']]
+      end
     end
 
-    @channel_id = channels.first['id']
-    @ws_uri     = URI(data['url'])
+    server = Puma::Single.new(EventsApp.new)
+    server.port = 8050
+    server.run
+    log :info 'after server.run'
+  end
+  
+  # Get real-time API endpoint (and other details)
+  def fetch_slack_websocket
+    data = self.slack_api(SLACK_SOCKET_MODE_METHOD, SLACK_APP_TOKEN, {})
+    @ws_uri = URI(data['url'])  # for testing connection refresh requests: + '&debug_reconnects=true')
   end
 
   def loop_websocket(socket_count)
+    # Queue start messages to user before other asynchronous activities occur (e.g. disc discovery).
+    if socket_count == 0
+      self.notify('Waking up.')
+    else
+      self.notify('Oops -- reconnected to Slack.  Sorry if we missed anything.')
+    end
+
     tcp = TCPSocket.new(@ws_uri.host, 443)
     @tls = OpenSSL::SSL::SSLSocket.new(tcp)
     @tls.connect
 
+    @mutex.synchronize { @wsrefresh = false }
     @driver = WebSocket::Driver.client(self)
 
     @driver.on :message, -> (event) {
+      log :debug, "websocket message: #{event.data}"
       data = JSON.parse(event.data)
-      self.handle_message(data['text']) if data['type'] == 'message'
+
+      case data['type']
+      when 'hello'
+       # intro message / noop
+
+      when 'disconnect'
+        # Slack would like us to reconnect
+        log :debug, "refreshing slack websocket, by request"
+        @mutex.synchronize { @wsrefresh = true }
+        @driver.close
+
+      when 'slash_commands'
+        self.handle_message(data['payload']['text'])
+        @driver.text("{ 'envelope_id': data['envelope_id'], 'response_type': 'in_channel', 'text': 'say something' }")
+
+      else
+        log :info, "a message we don't handle of type '#{data['type']}'"
+        # we generically confirm receipt by echoing envelope_id
+        if data.has_key?('envelope_id')
+          @driver.text( { 'envelope_id': data['envelope_id'], }.to_json )
+        end
+
+      end
     }
 
     if !@driver.start
@@ -79,7 +134,9 @@ class Slack
         begin
           @driver.parse(@tls.readpartial(16 * 1024))  # Slack docs say 16K max msgs
         rescue EOFError => e
-          log :info, "slack has closed our connection", exception: e
+          unless @wsrefresh
+            log :info, "slack has closed our connection", exception: e
+          end
           break
         rescue => e
           log :error, 'failure in Slack read loop', exception: e
@@ -95,12 +152,6 @@ class Slack
 
     self.send_pending
 
-    if socket_count == 0
-      self.notify('Waking up.')
-    else
-      self.notify('Oops -- reconnected to Slack.  Sorry if we missed anything.')
-    end
-
     @read_thread.join
 
     @mutex.synchronize { @wsready = false }
@@ -115,12 +166,9 @@ class Slack
     @read_thread.kill
   end
 
-  def handle_message(text)
-    if text =~ /\A#{SLACK_CHAT_NAME} /
-      command = text[SLACK_CHAT_NAME.length+1..-1]
-      log :info, "slack said: [#{command}]"
-      Thread.new { COMMANDS.handle_msg(command) }
-    end
+  def handle_message(command)
+    log :info, "slack said: [#{command}]"
+    Thread.new { COMMANDS.handle_msg(command) }
   end
 
   # used by websocket-driver
@@ -152,7 +200,7 @@ class Slack
     end
 
     @pending << msg
-    send_pending
+    self.send_pending
   end
 
   def send_pending
@@ -160,9 +208,7 @@ class Slack
       return if !@wsready
 
       while (msg = @pending.shift)
-        out = { id: @msg_id, type: 'message', channel: @channel_id, text: msg }
-
-        if @driver.text(out.to_json) == false
+        if self.slack_send_chat(msg) == false
           @pending.unshift msg
           break
         end
@@ -170,6 +216,25 @@ class Slack
         @msg_id += 1
       end
     end
+  end
+
+  def slack_send_chat(msg)
+    self.discover_channel_id if !@channel_id
+
+    data = {
+      channel: @channel_id,
+      text:    msg
+    }
+
+    response_data = slack_api(SLACK_POST_MESSAGEL_METHOD, SLACK_BOT_TOKEN, data, accept_notok=true)
+    return response_data['ok']
+  end
+
+  def discover_channel_id
+    data = self.slack_api(SLACK_CONVERSATIONS_LIST_METHOD, SLACK_BOT_TOKEN, {})
+    channel = data['channels'].find { |channel| channel['name'] == SLACK_CHANNEL }
+    @channel_id = channel['id']
+    log :debug, "slack channel id #{@channel_id}"
   end
 
 end
