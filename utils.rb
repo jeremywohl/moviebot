@@ -27,7 +27,7 @@ def external_with_timing(cmd, opts={})
 end
 
 def _external(cmd, opts={})
-  log :info, "starting #{cmd}" if !opts.has_key?(:silent)
+  log :info, "starting [#{cmd}]" if !opts.has_key?(:silent)
 
   cmd << " 2>&1"
 
