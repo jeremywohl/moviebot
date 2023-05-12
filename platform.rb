@@ -22,8 +22,8 @@ class MacPlatform
     external(cmd)
   end
 
-  def disc_rip(title, dest_dir, minlength=MKV_SCAN_MINLENGTH * 60)
-    rip_cmd = "#{MKV_RIP % { minlength: minlength }} #{title} \"#{dest_dir}\""
+  def disc_rip(track_id, dest_dir, minlength=MKV_SCAN_MINLENGTH * 60)
+    rip_cmd = "#{MKV_RIP % { minlength: minlength }} #{track_id} \"#{dest_dir}\""
     results, timing = external_with_timing rip_cmd
   end
 

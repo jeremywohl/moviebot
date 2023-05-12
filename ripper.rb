@@ -52,7 +52,7 @@ class Ripper
 
       # track entry
       when /^TINFO:(\d+),(\d+),\d+,(.+)$/
-        title = $1
+        id    = $1
         code  = $2.to_i
         value = $3.tr('"', '')
 
@@ -62,7 +62,7 @@ class Ripper
         when TRACK_SIZE
           size = value.gsub(/\s+/, '').gsub(/B$/, '')
         when TRACK_FILENAME
-          o = OpenStruct.new(disc: disc, title: title, name: value, time: time, size: size)
+          o = OpenStruct.new(disc: disc, id: id, name: value, time: time, size: size)
           t = time.split(':')
           o.time_in_minutes = t[0].to_i * 60 + t[1].to_i
           @tracks << o
@@ -80,7 +80,7 @@ class Ripper
   end
 
   def make_disc_signature
-    @tracks.first.disc + '::' + @tracks.map(&:title).join(',,')
+    @tracks.first.disc + '::' + @tracks.map(&:id).join(',,')
   end
 
   #
@@ -194,7 +194,7 @@ class Ripper
       Dir.mkdir(mkv_dir)
       notify("Starting to rip \"#{track.name}\" (with #{PLATFORM.free_space}G free space).")
 
-      results, timing = PLATFORM.disc_rip(track.title, mkv_dir)
+      results, timing = PLATFORM.disc_rip(track.id, mkv_dir)
       log :debug, results
 
       if results.lines.grep(/Copy complete/).first =~ /failed/
