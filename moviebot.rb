@@ -9,11 +9,11 @@ require 'ostruct'
 require 'thread'
 require 'securerandom'
 require 'net/http'
+require 'webrick'
 require 'json'
 require 'openssl'
 require 'fileutils'
 
-require 'websocket/driver'
 require 'concurrent'
 
 require_relative 'config'
