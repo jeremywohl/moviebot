@@ -34,7 +34,7 @@ log :info, 'start'
 
 SLACK = Slack.new
 
-FileUtils.mkdir([ RIPPING_ROOT, ENCODING_ROOT, DONE_ROOT ])
+FileUtils.makedirs([ RIPPING_ROOT, ENCODING_ROOT, DONE_ROOT ])
 
 %w( INT TERM ).each do |sig|
   trap sig do
