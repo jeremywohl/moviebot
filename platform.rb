@@ -9,8 +9,16 @@ ENCODE = %(#{HANDBRAKE_BIN} --input "%{input}" --output "%{output}" --preset '#{
 
 class MacPlatform
 
+  # Notes:
+  #   drutil prints three kinds of results:
+  #     1) empty (no drive),
+  #     2) /*No Media*/ when existing drive is empty,
+  #     3) named media
   def disc_present?
-    external('/usr/bin/drutil status', silent: true).lines.grep(/No Media/).empty?
+    result   = external('/usr/bin/drutil status', silent: true).strip
+    no_drive = result.empty?
+    no_media = !result.lines.grep(/No Media/).empty?
+    return ( no_drive || no_media ) ? false : true
   end
 
   def eject
