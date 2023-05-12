@@ -148,6 +148,27 @@ class Commands
   def space_command(rest)
     notify("I have #{PLATFORM.free_space}G of free space!")
   end
+
+  def what_command(rest)
+    ripping = RIPPER.what
+    current, enqueued = ENCODER.what
+
+    if !ripping && !current && enqueued == 0
+      status = 'Just sitting here. How about you?'
+    else
+      status  = ''
+      status += 'Ripping a disc. ' if ripping
+      status += "Encoding #{current.base}" if current
+      status += ", with #{enqueued} in queue" if enqueued > 0
+      status += '.'
+    end
+
+    notify(status)
+  end
+
+  def status_command(rest)
+    self.what_command(rest)
+  end
   
   def help_command(rest)
     msg  = "Here are common things you can say to me:\n"
@@ -156,7 +177,8 @@ class Commands
     msg << ">#{SLACK_CHAT_NAME} list\n"
     msg << ">#{SLACK_CHAT_NAME} title n (for n, see list)\n"
     msg << ">#{SLACK_CHAT_NAME} rename n Some new name (for n, see list)\n"
-    msg << ">#{SLACK_CHAT_NAME} space\n\n"
+    msg << ">#{SLACK_CHAT_NAME} space\n"
+    msg << ">#{SLACK_CHAT_NAME} status (or what)\n\n"
     msg << "Here are my other commands:\n"
     msg << ">#{SLACK_CHAT_NAME} confirm_repeat\n"
     msg << ">#{SLACK_CHAT_NAME} eject\n"

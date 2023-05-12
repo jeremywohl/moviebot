@@ -8,12 +8,15 @@ class Encoder
   
   def initialize
     @queue = Queue.new
+    @current_encode = nil
   end
   
   def go
     loop do
       movie = @queue.pop
+      @current_encode = movie
       encode(movie)
+      @current_encode = nil
     end
   end
 
@@ -54,6 +57,11 @@ class Encoder
   
   def add_movie(m)
     @queue << m
+  end
+
+  # What am I doing? Current movie I'm encoding + number of items in queue.
+  def what
+    [ @current_encode.clone, @queue.size ]
   end
   
 end
