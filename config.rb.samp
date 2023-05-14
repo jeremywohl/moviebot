@@ -15,7 +15,7 @@ ARCHIVE_TARGETS = {
 }
 
 # Slack settings
-SLACK_SLASH_URI    = '/your-random-abcdefghijklmnopqrstuvwxyz/slash-command'
+SLACK_EVENT_URI    = '/your-random-abcdefghijklmnopqrstuvwxyz/event'
 SLACK_BOT_TOKEN    = 'xoxb-slack-provided-abcdefghijklmnopqrstuvwxyz'
 SLACK_CHAT_NAME    = 'movie'   # how you get moviebot's attention
 SLACK_CHANNEL      = 'movies'  # moviebot will always responsd in this channel

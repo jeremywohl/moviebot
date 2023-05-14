@@ -2,6 +2,7 @@
 # slack robot
 #
 
+# TODO: print/raise errors, regardless of debug setting
 class WebrickLogger
   def <<(msg)
     log :debug, "WEBRICK: #{msg}"
@@ -12,13 +13,14 @@ class Slack
 
   SLACK_API_PREFIX_URL            = 'https://slack.com/api/'
   SLACK_CONVERSATIONS_LIST_METHOD = 'conversations.list'
-  SLACK_POST_MESSAGEL_METHOD      = 'chat.postMessage'
+  SLACK_POST_MESSAGE_METHOD       = 'chat.postMessage'
 
   MAX_SEND_CHARS  = 4_000
 
   def initialize
-    @pending    = Concurrent::Array.new
-    @channel_id = nil  # the movies channel id
+    @pending     = Concurrent::Array.new
+    @channel_id  = nil  # the movies channel id
+    @event_cache = {}
   end
 
   def go
@@ -30,18 +32,47 @@ class Slack
     @events_server.start
   end
 
-  # Receive /movies slash command from Slack Events API.
+  # Receive events from Slack Events API.
   def start_events_server
     logger = WEBrick::Log.new(WebrickLogger.new)
     server = WEBrick::HTTPServer.new Port: SLACK_LISTEN_PORT, Host: SLACK_LISTEN_HOST,
       Logger: logger, AccessLog: [ [ logger, WEBrick::AccessLog::COMBINED_LOG_FORMAT ] ]
 
-    server.mount_proc SLACK_SLASH_URI do |request, response|
-      self.handle_message(request.query['text'])
+    server.mount_proc SLACK_EVENT_URI do |request, response|
+      data = JSON.parse(request.body)
+      log :debug, "slack event data [#{data.inspect}]"
 
+      # server verification, echo challenge (we don't verify since we use a hidden URL)
+      if data['type'] == 'url_verification'
+        response.status = 200
+        response['Content-Type'] = 'text/plain'
+        response.body = data['challenge']
+
+        return
+      end
+
+      # all other events
+      if @event_cache.has_key?(data['event_id'])
+        # TODO: figure out when this can occur as a non-error state
+        log :info, "Getting duplicate events, this is probably an error. Event id #{data['event_id']}."
+      else
+        event = data['event']
+
+        if event['type'] == 'message' && !event.has_key?('subtype')
+          wakeup_prefix, command = event['text'].split(' ', 2)
+
+          if wakeup_prefix == SLACK_CHAT_NAME && command != nil && !command.empty?
+            self.handle_message(command)
+          end
+        end
+
+        @event_cache[data['event_id']] = 1
+      end
+
+      # acknowledge
       response.status = 200
-      response['Content-Type'] = 'application/json'
-      response.body = '{ "response_type": "in_channel" }'
+      response['Content-Type'] = 'text/plain'
+      response.body = ''
     end
 
     return server
@@ -117,7 +148,7 @@ class Slack
       text:    msg
     }
 
-    response_data = slack_api(SLACK_POST_MESSAGEL_METHOD, SLACK_BOT_TOKEN, data, accept_notok=true)
+    response_data = slack_api(SLACK_POST_MESSAGE_METHOD, SLACK_BOT_TOKEN, data, accept_notok=true)
     return response_data['ok']
   end
 
