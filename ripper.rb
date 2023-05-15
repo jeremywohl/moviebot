@@ -12,13 +12,29 @@ class Ripper
 
   def initialize
     @states   = Hash[self.methods.grep(/_state$/).map   { |m| [ m.to_s.gsub(/_state$/,   ''), m ] }]
-    @tracks   = []
+    @tracks   = []   # MakeMKV track data structs
+    @queue    = nil  # Movie objects, to be ripped
     @prevsig  = ''
     @currsig  = '<empty>'
 
     @confirm_repeat = false
 
     set_state :idle
+  end
+
+  def self.start_async
+    ripper= Ripper.new
+
+    Thread.new do
+      begin
+        ripper.go
+      rescue => e
+        log :error, 'ripper died', exception: e
+        notify("I (ripper) die!", poke_channel: true)
+      end
+    end
+
+    return ripper
   end
 
   #
@@ -93,8 +109,16 @@ class Ripper
     set_state :idle
   end
 
-  def add_tracks(tracks)
-    tracks.each { |t| @queue << t }
+  # options: { all: true/false, tracks: [ 1,2,5,... ] }
+  # note: tracks is 0-based
+  def add_tracks(options)
+    _tracks = options[:all] ? 0...@tracks.length : options[:tracks]
+
+    _tracks.each do |track_index|
+      next if track_index >= @tracks.length  # if user asks for non-existent
+      @queue << Movie.new.set_from_track(@tracks[track_index]).save
+    end
+
     set_state :ripping
   end
 
@@ -147,7 +171,7 @@ class Ripper
     min_tracks = @tracks.select { |t| t.time_in_minutes > MKV_RIP_MINLENGTH }
 
     if @currsig == @prevsig && !@confirm_repeat
-      notify("We're seeing the same disc again -- to combat eject problems, please tell me \"confirm_repeat\".", poke_channel: true)
+      notify("We're seeing the same disc again (computer asleep/locked?) -- if you'd like to repeat it, please tell me \"confirm_repeat\".", poke_channel: true)
       set_state :asking
     elsif @tracks.empty?
       notify("Hmm, I didn't find any show-length tracks on this disc -- ejecting!", poke_channel: true)
@@ -157,7 +181,7 @@ class Ripper
       msg = "There's only one show-length track, so I'm going to start ripping it now.\n"
       msg << "1: #{track.name} [#{track.time}, #{track.size}]\n"
       notify(msg)
-      @queue << track
+      @queue << Movie.new.set_from_track(track).save
       set_state :ripping
     else
       msg = "This disc contains the following tracks:\n"
@@ -188,25 +212,27 @@ class Ripper
     fail = false
 
     while !@queue.empty?
-      track   = @queue.pop
-      mkv_dir = "#{RIPPING_ROOT}/#{SecureRandom.hex[0...5]}-#{File.basename(track.name, ".*")}"
+      movie = @queue.pop
+      movie.set_rip_paths
+      movie.change_state(:ripping)
 
-      Dir.mkdir(mkv_dir)
-      notify("Starting to rip \"#{track.name}\" (with #{PLATFORM.free_space}G free space).")
+      log :info, movie.inspect
+      Dir.mkdir(movie.rip_dir)
+      notify("Starting to rip \"#{movie.name}\" [#{movie.track_name}] (with #{PLATFORM.free_space}G free space).")
 
-      results, timing = PLATFORM.disc_rip(track.id, mkv_dir)
+      results, timing = PLATFORM.disc_rip(movie)
       log :debug, results
 
       if results.lines.grep(/Copy complete/).first =~ /failed/
-        notify("Sorry, the rip of \"#{track.name}\" failed (took #{timing}).  Try cleaning the disc and refeeding?")
-        Dir.rmdir(mkv_dir)
+        notify("Sorry, the rip of \"#{movie.name}\" [#{movie.track_name}] failed (took #{timing}).  Try cleaning the disc and refeeding?")
+        Dir.rmdir(movie.rip_dir)
 
+        movie.change_state(:failed)
         fail = true
         break
       else
-        notify("Finished ripping of \"#{track.name}\" (took #{timing}).")
-
-        movie = OpenStruct.new(mkv_path: "#{mkv_dir}/#{track.name}", base: File.basename(track.name, ".*"))
+        notify("Finished ripping \"#{movie.name}\" [#{movie.track_name}] (took #{timing}).")
+        movie.change_state(:ripped)
         ENCODER.add_movie(movie)
       end
     end
@@ -225,14 +251,4 @@ class Ripper
     @state == 'ripping'
   end
 
-end
-
-RIPPER = Ripper.new
-Thread.new do
-  begin
-    RIPPER.go
-  rescue => e
-    log :error, 'ripper died', exception: e
-    notify("I (ripper) die!", poke_channel: true)
-  end
 end

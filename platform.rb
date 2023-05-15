@@ -30,13 +30,13 @@ class MacPlatform
     external(cmd)
   end
 
-  def disc_rip(track_id, dest_dir, minlength=MKV_SCAN_MINLENGTH * 60)
-    rip_cmd = "#{MKV_RIP % { minlength: minlength }} #{track_id} \"#{dest_dir}\""
+  def disc_rip(movie, minlength=MKV_SCAN_MINLENGTH * 60)
+    rip_cmd = "#{MKV_RIP % { minlength: minlength }} #{movie.track_id} \"#{movie.rip_dir}\""
     results, timing = external_with_timing rip_cmd
   end
 
-  def encode(input, output)
-    encode_cmd = ENCODE % { input: input, output: output }
+  def encode(movie)
+    encode_cmd = ENCODE % { input: movie.rip_fn, output: movie.encode_fn }
     result, timing = external_with_timing encode_cmd
   end
 

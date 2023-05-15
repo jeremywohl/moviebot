@@ -29,8 +29,8 @@ class PlatformMock
   def disc_rip(title, dest_dir, minlength=MKV_SCAN_MINLENGTH * 60)
   end
 
-  def encode(input, output)
-    FileUtils.touch(output)
+  def encode(movie)
+    FileUtils.touch(movie.encode_fn)
     return "", 0
   end
 

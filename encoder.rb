@@ -10,8 +10,25 @@ class Encoder
     @queue = Queue.new
     @current_encode = nil
   end
-  
+
+  def self.start_async
+    encoder = Encoder.new
+
+    Thread.new do
+      begin
+        encoder.go
+      rescue => e
+        log :error, 'encoder died', exception: e
+        notify("I (encoder) die!", poke_channel: true)
+      end
+    end
+
+    return encoder
+  end
+
   def go
+    start_pending_encodes
+
     loop do
       movie = @queue.pop
       @current_encode = movie
@@ -21,8 +38,9 @@ class Encoder
   end
 
   def encode(movie)
-    if !File.exist?(movie.mkv_path)
-      notify( %(Hmmm, #{movie.mkv_path} doesn't seem to exist anymore; skipping.), poke_channel: true )
+    if !File.exist?(movie.rip_fn)
+      notify( %(Hmmm, #{File.basename(movie.rip_fn)} doesn't seem to exist anymore; skipping.), poke_channel: true )
+      movie.change_state(:failed)
       return
     end
 
@@ -34,25 +52,28 @@ class Encoder
         sprintf("%s left, ", pluralize(@queue.size, 'other', 'others'))
       end
 
-    notify("Starting the encode of \"#{movie.base}.m4v\" (#{encodes_left}with #{PLATFORM.free_space}G free space).")
+    notify("Starting the encode of \"#{movie.name}\" [#{movie.track_name}] (#{encodes_left}with #{PLATFORM.free_space}G free space).")
     
-    encode_fn = "#{ENCODING_ROOT}/#{SecureRandom.hex[0...5]}-#{movie.base}.m4v"
+    movie.set_encode_fn
+    movie.change_state(:encoding)
     
-    result, timing = PLATFORM.encode(movie.mkv_path, encode_fn)
+    result, timing = PLATFORM.encode(movie)
     log :debug, result
     
-    notify("Finished encoding of \"#{movie.base}.m4v\" (took #{timing}).")
+    notify("Finished encoding \"#{movie.name}\" [#{movie.track_name}] (took #{timing}).")
     
-    log :info, "deleting #{movie.mkv_path}"
-    File.delete(movie.mkv_path)
-    Dir.rmdir(File.dirname(movie.mkv_path))
+    log :info, "deleting #{movie.rip_fn}"
+    File.delete(movie.rip_fn)
+    Dir.rmdir(movie.rip_dir)
     
-    final_path = "#{DONE_ROOT}/#{movie.base}.m4v"
-    if File.exist?(final_path)
-      final_path = "#{DONE_ROOT}/#{movie.base}-#{SecureRandom.hex[0...5]}.m4v"
+    movie.done_fn = "#{DONE_ROOT}/#{movie.name}.m4v"
+    if File.exist?(movie.done_fn)
+      movie.done_fn = "#{DONE_ROOT}/#{movie.name}-#{SecureRandom.hex[0...5]}.m4v"
     end
+    movie.save
 
-    File.rename(encode_fn, final_path)
+    File.rename(movie.encode_fn, movie.done_fn)
+    movie.change_state(:done)
   end
   
   def add_movie(m)
@@ -63,15 +84,10 @@ class Encoder
   def what
     [ @current_encode.clone, @queue.size ]
   end
-  
-end
 
-ENCODER = Encoder.new
-Thread.new do
-  begin
-    ENCODER.go
-  rescue => e
-    log :error, 'encoder died', exception: e
-    notify("I (encoder) die!", poke_channel: true)
+  # Enqueue ripped movies ready to encode, from a prior run.
+  def start_pending_encodes
+    Movie.where(state: 'ripped').each { |movie| self.add_movie(movie) }
   end
+
 end

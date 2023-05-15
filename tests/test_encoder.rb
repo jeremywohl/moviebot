@@ -12,22 +12,24 @@ class TestEncoder < MiniTest::Test
   end
 
   def test_encode
-    Dir.mkdir("#{RIPPING_ROOT}/xyz")
-    FileUtils.touch("#{RIPPING_ROOT}/xyz/title00.mkv")
+    movie = Movie.new(name: "title00", track_name: "title00.mkv").save
+    movie.set_rip_paths
+    Dir.mkdir(movie.rip_dir)
+    FileUtils.touch(movie.rip_fn)
 
-    movie = OpenStruct.new(mkv_path: "#{RIPPING_ROOT}/xyz/title00.mkv", base: "title00")
     ENCODER.add_movie(movie)
     sleep 0.1
     
-    assert_equal(false, File.exist?("#{RIPPING_ROOT}/xyz/title00.mkv"))
-    assert_equal(true,  File.exist?("#{DONE_ROOT}/title00.m4v"))
+    assert_equal(false, File.exist?(movie.rip_fn))
+    assert_equal(true,  File.exist?(movie.done_fn))
 
     assert_equal( %|Starting the encode of "title00.m4v" (no others queued, with 22G free space).|, SLACK.history[-2] )
     assert_equal( %|Finished encoding of "title00.m4v" (took 0).|, SLACK.history[-1] )
   end
   
   def test_absent_rip
-    movie = OpenStruct.new(mkv_path: "abc.mkv", base: "abc")
+    movie = Movie.new(name: "abc", track_name: "abc.mkv").save
+    movie.set_rip_paths
     ENCODER.add_movie(movie)
     sleep 0.1
     
@@ -35,23 +37,21 @@ class TestEncoder < MiniTest::Test
   end
   
   def test_duplicate_names
-    FileUtils.rm Dir["#{DONE_ROOT}/*.m4v"]  # clear the decks
-    
     # create one file
-    Dir.mkdir("#{RIPPING_ROOT}/abc")
-    FileUtils.touch("#{RIPPING_ROOT}/abc/title00.mkv")
-
-    movie = OpenStruct.new(mkv_path: "#{RIPPING_ROOT}/abc/title00.mkv", base: "title00")
+    movie = Movie.new(name: "title00", track_name: "title00.mkv").save
+    movie.set_rip_paths
+    Dir.mkdir(movie.rip_dir)
+    FileUtils.touch(movie.rip_fn)
     ENCODER.add_movie(movie)
     sleep 0.1
     
     assert_equal(true, File.exist?("#{DONE_ROOT}/title00.m4v"))
     
-    # and then another with the same name, but should result in a modified path
-    Dir.mkdir("#{RIPPING_ROOT}/def")
-    FileUtils.touch("#{RIPPING_ROOT}/def/title00.mkv")
-
-    movie = OpenStruct.new(mkv_path: "#{RIPPING_ROOT}/def/title00.mkv", base: "title00")
+    # and then another with the same name (but a different mkv path)
+    movie = Movie.new(name: "title00", track_name: "title00.mkv").save
+    movie.set_rip_paths
+    Dir.mkdir(movie.rip_dir)
+    FileUtils.touch(movie.rip_fn)
     ENCODER.add_movie(movie)
     sleep 0.1
 

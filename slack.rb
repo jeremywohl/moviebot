@@ -23,7 +23,7 @@ class Slack
     @event_cache = {}
   end
 
-  def go
+  def start_sync
     @events_server = self.start_events_server
     
     self.notify('Waking up.')

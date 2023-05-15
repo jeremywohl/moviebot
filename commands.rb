@@ -35,36 +35,19 @@ class Commands
   
   def rip_command(rest)
     if rest == 'all'
-      RIPPER.add_tracks(RIPPER.tracks)
+      RIPPER.add_tracks(all: true)
     elsif rest =~ /[\d,]+/
       toq = []
-      rest.split(',').each do |digits|
+      rest.split(/,\s*/).each do |digits|
         next if digits !~ /\d+/
-        next if digits.to_i > RIPPER.tracks.length
-        toq << RIPPER.tracks[digits.to_i - 1]
+        toq << digits.to_i - 1  # add as 0-based
       end
-      RIPPER.add_tracks(toq)
+      RIPPER.add_tracks(tracks: toq)
     end
   end
   
   def confirm_repeat_command(rest)
     RIPPER.confirm_repeat
-  end
-  
-  def encode_command(rest)
-    found = false
-    if rest =~ /^\w{5}$/ && !Dir["#{RIPPING_ROOT}/#{rest}-*"].empty?
-      mkv = Dir["#{RIPPING_ROOT}/#{rest}-*/*.mkv"].first
-      if mkv
-        movie = OpenStruct.new(mkv_path: mkv, base: File.basename(mkv, ".*"))
-        ENCODER.add_movie(movie)
-        notify("OK, added \"#{File.basename(mkv)}\" to my encode queue.")
-        found = true
-      end
-    end
-    if !found
-      notify("Hmm, I couldn't find anything like that.")
-    end
   end
   
   # send Slack our current movie list
@@ -182,7 +165,6 @@ class Commands
     msg << "Here are my other commands:\n"
     msg << ">#{SLACK_CHAT_NAME} confirm_repeat\n"
     msg << ">#{SLACK_CHAT_NAME} eject\n"
-    msg << ">#{SLACK_CHAT_NAME} encode abcde (where abcde is an existing folder code)\n"
 
     notify(msg)
   end
