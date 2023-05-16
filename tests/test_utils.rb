@@ -29,4 +29,15 @@ class TestUtils < MiniTest::Test
     end
   end
 
+  def test_format_time_diff
+    [
+      [ Time.now,                 "0s" ],
+      [ Time.now - 59,           "59s" ],
+      [ Time.now - 3599,     "59m:59s" ],
+      [ Time.now - 85_000,   "23h:36m" ],
+    ].each do |test|
+      assert_equal(test[1], format_time_diff(test[0]))
+    end
+  end
+
 end
