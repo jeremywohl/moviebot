@@ -4,6 +4,13 @@
 
 class Commands
 
+  VerboseStates = {
+    'pending'  => 'waiting to be ripped',
+    'ripping'  => 'now ripping',
+    'ripped'   => 'waiting to be encoded',
+    'encoding' => 'now encoding',
+  }
+
   def initialize
     @commands = Hash[self.methods.grep(/_command$/).map { |m| [ m.to_s.gsub(/_command$/, ''), m ] }]
   end
@@ -133,17 +140,15 @@ class Commands
   end
 
   def what_command(rest)
-    ripping = RIPPER.what
-    current, enqueued = ENCODER.what
+    active = Movie.where(state: %w( pending ripping ripped encoding )).order(Sequel.asc(:id)).all
 
-    if !ripping && !current && enqueued == 0
+    if active.empty?
       status = 'Just sitting here. How about you?'
     else
-      status  = ''
-      status += 'Ripping a disc. ' if ripping
-      status += "Encoding #{current.base}" if current
-      status += ", with #{enqueued} in queue" if enqueued > 0
-      status += '.'
+      status = "Here is what's in progress:\n"
+      active.each do |movie|
+        status += "#{movie.name} [#{movie.track_name}] (#{VerboseStates[movie.state]})\n"
+      end
     end
 
     notify(status)

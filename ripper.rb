@@ -246,9 +246,4 @@ class Ripper
     eject
   end
 
-  # What am I doing? Ripping: true/false
-  def what
-    @state == 'ripping'
-  end
-
 end
