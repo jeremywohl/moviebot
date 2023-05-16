@@ -1,9 +1,11 @@
 Moviebot
 ========
 
-Moviebot is a Slack robot that automates the rip and encode of movie DVDs and Blu-rays.  Moviebot watches your disc drive and, behind the scenes, uses MakeMKV and Handbrake to stir up beautiful m4v's.  Meanwhile you sit on your couch and chat up moviebot.  (Let the kids swap discs.)
+Moviebot is a Slack robot that automates the rip and encode of movie DVDs and Blu-rays. Moviebot watches your disc drive and, behind the scenes, uses MakeMKV and Handbrake to stir up beautiful m4v's. Meanwhile you sit on your couch and chat up moviebot, to pick tracks, and rename and move around completed movies. (Let the kids swap discs.)
 
-_Warning: Please observe your country's laws regarding commercial entertainment.  You may or may not be able to make backup copies of movies you own._
+_Note: The following refers to an older Slack setup, using a deprecated API. Will update this text soon._
+
+_Warning: Please observe your country's laws regarding commercial entertainment. You may or may not be able to make backup copies of movies you own._
 
   * [What it looks like](#what-it-looks-like)
   * [Setting up Moviebot](#setting-up-moviebot)
