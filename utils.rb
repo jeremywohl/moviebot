@@ -1,13 +1,23 @@
 # Format the interval between now and +tstart+, e.g. 3s or 15m:20s or 2h:21m.
 def format_time_diff(tstart)
   diff = Time.now - tstart
-  if diff < 60
-    sprintf "%ds", diff
-  elsif diff < 60 * 60
-    sprintf "%dm:%ds", diff / 60, diff % 60
+  format_time(diff)
+end
+
+# Present time as 59s or 59m:59s or 23h:36m.
+def format_time(seconds)
+  if seconds < 60
+    sprintf "%ds", seconds
+  elsif seconds < 60 * 60
+    sprintf "%dm:%ds", seconds / 60, seconds % 60
   else
-    sprintf "%dh:%dm", diff / (60 * 60), diff % (60 * 60) / 60
+    sprintf "%dh:%dm", seconds / (60 * 60), seconds % (60 * 60) / 60
   end
+end
+
+# Present in gigabytes (powers of 10), 27.4G.
+def format_size(bytes)
+  sprintf "%0.1fG", bytes.to_f / 10**9
 end
 
 # Convenience method for Slack notifications.

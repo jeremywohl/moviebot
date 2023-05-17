@@ -7,8 +7,8 @@ Sequel.migration do
       String  :disc
       Integer :track_id
       String  :track_name
-      Integer :time
-      Integer :size
+      Integer :time  # seconds
+      Integer :size  # bytes
 
       # moviebot fields
       String  :name, null: false

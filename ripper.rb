@@ -2,16 +2,20 @@
 # Disc automata
 #
 
-TRACK_LENGTH   = 9
-TRACK_SIZE     = 10
-TRACK_FILENAME = 27
-
-MAX_TRACK_LIST = 30
-
 class Ripper
+
+  # MakeMKV CINFO/TINFO record identifiers
+  #  see https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/MakeMKV-Codes
+  TRACK_LENGTH   = 9   # h:m:s
+  TRACK_SIZE     = 11  # Note: the formatted '10' record uses incorrect powers-of-2 GB, so use these bytes.
+  TRACK_FILENAME = 27
+  DISC_NAME      = 30
+
+  MAX_TRACK_LIST = 30
 
   def initialize
     @states   = Hash[self.methods.grep(/_state$/).map   { |m| [ m.to_s.gsub(/_state$/,   ''), m ] }]
+    @disc     = ''   # Current disc, if any
     @tracks   = []   # MakeMKV track data structs
     @queue    = nil  # Movie objects, to be ripped
     @prevsig  = ''
@@ -43,7 +47,6 @@ class Ripper
 
   def fetch_tracks
     @tracks = []
-    disc = ''
     time = ''
     size = 0
 
@@ -62,11 +65,11 @@ class Ripper
         eject
         return false
 
-      # disc name
-      when /^CINFO:30,0,\"(.+)\"$/
-        disc  = $1
+      # disc entries, we just take the name
+      when /^CINFO:#{DISC_NAME},0,\"(.+)\"$/
+        @disc  = $1
 
-      # track entry
+      # track entries
       when /^TINFO:(\d+),(\d+),\d+,(.+)$/
         id    = $1
         code  = $2.to_i
@@ -74,13 +77,19 @@ class Ripper
 
         case code
         when TRACK_LENGTH
-          time = value
+          t = value.split(':')  # h:m:s
+          if t.size == 2
+            time = t[1].to_i * 60 + t[2].to_i
+          elsif t.size == 3
+            time = t[0].to_i * 3600 + t[1].to_i * 60 + t[2].to_i
+          else
+            log :error, "not built to parse time like [#{value}]; please file a bug with this line"
+            time = 0
+          end
         when TRACK_SIZE
-          size = value.gsub(/\s+/, '').gsub(/B$/, '')
+          size = value.to_i
         when TRACK_FILENAME
-          o = OpenStruct.new(disc: disc, id: id, name: value, time: time, size: size)
-          t = time.split(':')
-          o.time_in_minutes = t[0].to_i * 60 + t[1].to_i
+          o = OpenStruct.new(disc: @disc, id: id, name: value, time: time, size: size)
           @tracks << o
         end
 
@@ -168,7 +177,9 @@ class Ripper
 
     return if !fetch_tracks
 
-    min_tracks = @tracks.select { |t| t.time_in_minutes > MKV_RIP_MINLENGTH }
+    notify("Disc: #{@disc}")
+
+    min_tracks = @tracks.select { |t| ( t.time / 60 ) > MKV_RIP_MINLENGTH }
 
     if @currsig == @prevsig && !@confirm_repeat
       notify("We're seeing the same disc again (computer asleep/locked?) -- if you'd like to repeat it, please tell me \"confirm_repeat\".", poke_channel: true)
@@ -179,14 +190,14 @@ class Ripper
     elsif @tracks.length == 1 || min_tracks.length == 1
       track = min_tracks.first || @tracks.first
       msg = "There's only one show-length track, so I'm going to start ripping it now.\n"
-      msg << "1: #{track.name} [#{track.time}, #{track.size}]\n"
+      msg << "1: #{track.name} [#{format_time(track.time)}, #{format_size(track.size)}]\n"
       notify(msg)
       @queue << Movie.new.set_from_track(track).save
       set_state :ripping
     else
       msg = "This disc contains the following tracks:\n"
       @tracks.first(MAX_TRACK_LIST).each_with_index do |track_, index|
-        msg << "#{index+1}) #{track_.name} [#{track_.time}, #{track_.size}]\n"
+        msg << "#{index+1}) #{track_.name} [#{format_time(track_.time)}, #{format_size(track_.size)}]\n"
       end
       if @tracks.size > MAX_TRACK_LIST
         msg << ".. list too long, possible copy protection & playlist obfuscation ..\n"

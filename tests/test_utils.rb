@@ -40,4 +40,9 @@ class TestUtils < MiniTest::Test
     end
   end
 
+  def test_format_size
+    assert_equal( "0.6G", format_size(   600_000_000))
+    assert_equal("27.1G", format_size(27_100_000_000))
+  end
+
 end
