@@ -23,8 +23,8 @@ class TestEncoder < MiniTest::Test
     assert_equal(false, File.exist?(movie.rip_fn))
     assert_equal(true,  File.exist?(movie.done_fn))
 
-    assert_equal( %|Starting the encode of "title00.m4v" (no others queued, with 22G free space).|, SLACK.history[-2] )
-    assert_equal( %|Finished encoding of "title00.m4v" (took 0).|, SLACK.history[-1] )
+    assert_equal( %|Starting the encode of "title00" [title00.mkv] (no others queued, with 22G free space).|, SLACK.history[-2] )
+    assert_equal( %|Finished encoding "title00" [title00.mkv] (took 0s).|, SLACK.history[-1] )
   end
   
   def test_absent_rip

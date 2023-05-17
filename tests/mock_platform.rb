@@ -31,7 +31,7 @@ class PlatformMock
 
   def encode(movie)
     FileUtils.touch(movie.encode_fn)
-    return "", 0
+    return "", "0s"
   end
 
   def sleep_idle

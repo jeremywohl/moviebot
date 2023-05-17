@@ -30,3 +30,6 @@ DB = Database.open_and_migrate
 require_relative '../models'
 
 FileUtils.makedirs([ RIPPING_ROOT, ENCODING_ROOT, DONE_ROOT ])
+
+ENCODER = Encoder.start_async
+RIPPER  = Ripper.start_async

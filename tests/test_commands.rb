@@ -7,14 +7,18 @@ require_relative 'common'
 class TestCommands < MiniTest::Test
 
   def test_what_command
-    Movie.new(name: 'abc', track_name: 'abc_t00.mkv').save
-    Movie.new(name: 'def', track_name: 'def_t00.mkv').save
-    Movie.new(name: 'ghi', track_name: 'ghi_t00.mkv', state: 'ripping').save
-    Movie.new(name: 'jkl', track_name: 'jkl_t00.mkv', state: 'ripped').save
-    Movie.new(name: 'mno', track_name: 'mno_t00.mkv', state: 'ripped').save
-    Movie.new(name: 'pqr', track_name: 'pqr_t00.mkv', state: 'encoding').save
-    Movie.new(name: 'stu', track_name: 'stu_t00.mkv', state: 'done').save
+    # reset db
+    DB[:movies].delete
+
+    # time ordered
     Movie.new(name: 'vwx', track_name: 'vwx_t00.mkv', state: 'failed').save
+    Movie.new(name: 'stu', track_name: 'stu_t00.mkv', state: 'done').save
+    Movie.new(name: 'pqr', track_name: 'pqr_t00.mkv', state: 'encoding').save
+    Movie.new(name: 'mno', track_name: 'mno_t00.mkv', state: 'ripped').save
+    Movie.new(name: 'jkl', track_name: 'jkl_t00.mkv', state: 'ripped').save
+    Movie.new(name: 'ghi', track_name: 'ghi_t00.mkv', state: 'ripping').save
+    Movie.new(name: 'def', track_name: 'def_t00.mkv').save
+    Movie.new(name: 'abc', track_name: 'abc_t00.mkv').save
 
     output = <<~END
     Here is what's in progress:
