@@ -18,12 +18,12 @@ class TestCommands < MiniTest::Test
 
     output = <<~END
     Here is what's in progress:
-    abc [abc_t00.mkv] (waiting to be ripped)
-    def [def_t00.mkv] (waiting to be ripped)
-    ghi [ghi_t00.mkv] (now ripping)
-    jkl [jkl_t00.mkv] (waiting to be encoded)
-    mno [mno_t00.mkv] (waiting to be encoded)
-    pqr [pqr_t00.mkv] (now encoding)
+    >abc [abc_t00.mkv] (waiting to be ripped)
+    >def [def_t00.mkv] (waiting to be ripped)
+    >ghi [ghi_t00.mkv] (now ripping)
+    >jkl [jkl_t00.mkv] (waiting to be encoded)
+    >mno [mno_t00.mkv] (waiting to be encoded)
+    >pqr [pqr_t00.mkv] (now encoding)
     END
 
     COMMANDS.what_command(nil)
