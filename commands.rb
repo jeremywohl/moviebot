@@ -75,28 +75,6 @@ class Commands
     notify_movie_list
   end
   
-  def title_command(rest)
-    files = Dir["#{DONE_ROOT}/*.m4v"].sort
-    
-    if rest == 'all'
-      indices = files.each_with_index.map { |fn,i| i + 1 }
-    else
-      indices = rest.split.map { |s| s.to_i }
-    end
-    
-    indices.each do |index|
-      if index > 0 && index <= files.length
-        old_fn = File.basename(files[index - 1], '.*')
-        new_fn = title_case_fn(clean_fn(old_fn))
-        File.rename("#{DONE_ROOT}/#{old_fn}.m4v", "#{DONE_ROOT}/#{new_fn}.m4v")
-        notify("OK, I renamed \"#{old_fn}\" to \"#{new_fn}\".")
-      else
-        notify "Sorry, #{index} is not in my list."
-      end
-    end
-    notify_movie_list
-  end
-  
   def rename_command(rest)
     index, new_fn = rest.split(/ /, 2)
     files = Dir["#{DONE_ROOT}/*.m4v"].sort
@@ -161,9 +139,8 @@ class Commands
   def help_command(rest)
     msg  = "Here are common things you can say to me:\n"
     msg << ">#{SLACK_CHAT_NAME} archive {#{ARCHIVE_TARGETS.keys.join(',')}} 1 [2 3 4]\n"
-    msg << ">#{SLACK_CHAT_NAME} rip 1[,2,3,4]\n"
     msg << ">#{SLACK_CHAT_NAME} list\n"
-    msg << ">#{SLACK_CHAT_NAME} title n (for n, see list)\n"
+    msg << ">#{SLACK_CHAT_NAME} rip 1[,2,3,4]\n"
     msg << ">#{SLACK_CHAT_NAME} rename n Some new name (for n, see list)\n"
     msg << ">#{SLACK_CHAT_NAME} space\n"
     msg << ">#{SLACK_CHAT_NAME} status (or what)\n\n"
