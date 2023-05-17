@@ -140,7 +140,7 @@ class Commands
   end
 
   def what_command(rest)
-    active = Movie.where(state: %w( pending ripping ripped encoding )).order(Sequel.asc(:id)).all
+    active = Movie.where(state: %w( pending ripping ripped encoding )).order(Sequel.desc(:id)).all
 
     if active.empty?
       status = 'Just sitting here. How about you?'
