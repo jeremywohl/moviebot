@@ -2,13 +2,13 @@
 # Platform-specific behavior
 #
 
-MKV_LIST = "#{MAKEMKV_BIN} --minlength=%{minlength} --robot info disc:0"
-MKV_RIP  = "#{MAKEMKV_BIN} --minlength=%{minlength} --robot mkv disc:0"
-
-ENCODE = %(#{HANDBRAKE_BIN} --input "%{input}" --output "%{output}" --preset '#{HANDBRAKE_PROFILE}')
-
 class MacPlatform
 
+  MKV_LIST = "#{MAKEMKV_BIN} --minlength=%{minlength} --robot info disc:0"
+  MKV_RIP  = "#{MAKEMKV_BIN} --minlength=%{minlength} --robot mkv disc:0"
+  
+  ENCODE = %(#{HANDBRAKE_BIN} --input "%{input}" --output "%{output}" --preset '#{HANDBRAKE_PROFILE}')
+  
   # Notes:
   #   drutil prints three kinds of results:
   #     1) empty (no drive),
