@@ -1,1 +1,1 @@
-ruby moviebot.rb >> log/moviebot.log 2>&1 &
+ruby src/moviebot.rb >> log/moviebot.log 2>&1 &

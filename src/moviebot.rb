@@ -17,7 +17,7 @@ require 'fileutils'
 require 'concurrent'
 require 'sequel'
 
-require_relative 'config'
+require_relative '../config'
 require_relative 'title_casing'
 require_relative 'utils'
 require_relative 'platform'
