@@ -145,6 +145,8 @@ class Ripper
   #
 
   def go
+    cleanup_abandoned_rips
+
     loop do
       self.send(@state)
     end
@@ -255,6 +257,17 @@ class Ripper
     end
 
     eject
+  end
+
+  def cleanup_abandoned_rips
+    Movie.where(state: 'ripping').each do |movie|
+      movie.state = 'abandoned'
+      movie.save
+
+      log :info, "Removing abandoned rip directory [#{movie.rip_dir}]"
+
+      FileUtils.remove_dir(movie.rip_dir)
+    end
   end
 
 end

@@ -11,6 +11,11 @@ class TestRipper < MiniTest::Test
     SLACK.clear
   end
 
+  def setup
+    # reset db
+    DB[:movies].delete
+  end
+
   def test_app_too_old
     PLATFORM.simulate_mkv_with_response <<-EOS
 MSG:5021,260,1,"This application version is too old.  More verbiage here.  Call your mother."
@@ -71,6 +76,21 @@ TINFO:0,27,0,"A_Story_t00.mkv"
     total   += footer1 + footer2
 
     assert_equal(total, SLACK.pop)
+  end
+
+  def test_cleanup_abandoned_rips
+    movie = Movie.new(name: 'abc', track_name: 'abc_t00.mkv', state: 'ripping')
+    movie.set_rip_paths
+    Dir.mkdir(movie.rip_dir)
+    FileUtils.touch(movie.rip_fn)
+
+    assert Dir.exist?(movie.rip_dir)
+    assert File.exist?(movie.rip_fn)
+
+    RIPPER.cleanup_abandoned_rips
+
+    assert !Dir.exist?(movie.rip_dir)
+    assert_equal 'abandoned', Movie.first(id: movie.id).state
   end
 
 end

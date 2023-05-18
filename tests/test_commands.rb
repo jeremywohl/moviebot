@@ -6,10 +6,12 @@ require_relative 'common'
 
 class TestCommands < MiniTest::Test
 
-  def test_what_command
+  def setup
     # reset db
     DB[:movies].delete
+  end
 
+  def test_what_command
     # time ordered
     Movie.new(name: 'vwx', track_name: 'vwx_t00.mkv', state: 'failed').save
     Movie.new(name: 'stu', track_name: 'stu_t00.mkv', state: 'done').save
