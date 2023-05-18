@@ -5,7 +5,7 @@
 class Movie < Sequel::Model
   def validate
     super
-    validates_includes %w( pending ripping ripped encoding done failed abandoned ), :state
+    validates_includes %w( pending ripping ripped encoding done archived failed abandoned ), :state
   end
 
   def set_from_track(track)
