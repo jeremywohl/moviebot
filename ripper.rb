@@ -229,7 +229,6 @@ class Ripper
       movie.set_rip_paths
       movie.change_state(:ripping)
 
-      log :info, movie.inspect
       Dir.mkdir(movie.rip_dir)
       notify("Starting to rip \"#{movie.name}\" [#{movie.track_name}] (with #{PLATFORM.free_space}G free space).")
 
