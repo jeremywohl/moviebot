@@ -5,9 +5,9 @@
 class MacPlatform
 
   MKV_LIST = "#{MAKEMKV_BIN} --minlength=%{minlength} --robot info disc:0"
-  MKV_RIP  = "#{MAKEMKV_BIN} --minlength=%{minlength} --robot mkv disc:0"
-  
-  ENCODE = %(#{HANDBRAKE_BIN} --input "%{input}" --output "%{output}" --preset '#{HANDBRAKE_PROFILE}')
+  MKV_RIP  = "#{MAKEMKV_BIN} --minlength=%{minlength} --robot mkv disc:0 %{track_id} %{rip_dir}"
+
+  ENCODE = "#{HANDBRAKE_BIN} --input %{input} --output %{output} --preset %{profile}"
   
   # Notes:
   #   drutil prints three kinds of results:
@@ -15,29 +15,31 @@ class MacPlatform
   #     2) /*No Media*/ when existing drive is empty,
   #     3) named media
   def disc_present?
-    result   = external('/usr/bin/drutil status', silent: true).strip
-    no_drive = result.empty?
-    no_media = !result.lines.grep(/No Media/).empty?
+    _, result = external([ '/usr/bin/drutil', 'status' ], silent: true)
+    result.strip!
+    no_drive  = result.empty?
+    no_media  = !result.lines.grep(/No Media/).empty?
     return ( no_drive || no_media ) ? false : true
   end
 
   def eject
-    result, timing = external_with_timing '/usr/bin/drutil eject'
+    _, result, timing = external_with_timing [ '/usr/bin/drutil', 'eject' ]
   end
 
   def disc_list(minlength=MKV_SCAN_MINLENGTH * 60)
-    cmd = MKV_LIST % { minlength: MKV_SCAN_MINLENGTH * 60 }
-    external(cmd)
+    cmd = interpolate_cmd(MKV_LIST, { minlength: MKV_SCAN_MINLENGTH * 60 })
+    _, result = external cmd
+    return result
   end
 
   def disc_rip(movie, minlength=MKV_SCAN_MINLENGTH * 60)
-    rip_cmd = "#{MKV_RIP % { minlength: minlength }} #{movie.track_id} \"#{movie.rip_dir}\""
-    results, timing = external_with_timing rip_cmd
+    cmd = interpolate_cmd(MKV_RIP, { minlength: minlength, track_id: movie.track_id, rip_dir: movie.rip_dir })
+    external_with_timing cmd
   end
 
   def encode(movie)
-    encode_cmd = ENCODE % { input: movie.rip_fn, output: movie.encode_fn }
-    result, timing = external_with_timing encode_cmd
+    cmd = interpolate_cmd(ENCODE, { input: movie.rip_fn, output: movie.encode_fn, profile: HANDBRAKE_PROFILE })
+    external_with_timing cmd
   end
 
   def sleep_idle

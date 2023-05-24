@@ -13,9 +13,13 @@ require 'webrick'
 require 'json'
 require 'openssl'
 require 'fileutils'
+require 'tempfile'
 
 require 'concurrent'
 require 'sequel'
+require 'childprocess'
+require 'active_support'
+require 'active_support/core_ext/hash/keys'
 
 require_relative '../config'
 require_relative 'title_casing'
@@ -32,6 +36,8 @@ require_relative 'database'
 STDOUT.sync = true
 STDERR.sync = true
 
+$shutdown = false
+
 DB = Database.open_and_migrate
 require_relative 'models'
 
@@ -43,8 +49,10 @@ SLACK = Slack.new
 
 %w( INT TERM ).each do |sig|
   trap sig do
-    # TODO: close ripper / encoder
-    SLACK.closeup
+    $shutdown = true
+
+    halt_subprocesses  # TODO: may fail for thread lock reasons
+    SLACK.closeup      # TODO: may fail for thread lock reasons
   end
 end
 

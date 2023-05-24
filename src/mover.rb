@@ -19,9 +19,9 @@ class Mover
     # TODO: refactor to platform
     cmd = %(mv "#{move.source}" "#{ARCHIVE_ROOT}/#{ARCHIVE_TARGETS[move.target]}")
     # TODO: handle failures
-    _, timing = external_with_timing cmd
+    _, _, timing = external_with_timing cmd
 
-    notify("Archived \"#{File.basename(move.source, '.*')}\" to #{move.target} (took #{timing}).")
+    SLACK.send_text_message("Archived \"#{File.basename(move.source, '.*')}\" to #{move.target} (took #{timing}).")
   end
   
   def add_move(m)
@@ -36,6 +36,6 @@ Thread.new do
     MOVER.go
   rescue => e
     log :error, "mover died", exception: e
-    notify("I (mover) die!", poke_channel: true)
+    SLACK.send_text_message("I (mover) die!", poke_channel: true)
   end
 end

@@ -20,37 +20,24 @@ class Commands
   end
   
   def handle_msg(msg)
-    cmd, rest = msg.split(/\s+/, 2)
-    cmd.strip!
+    verb, rest = msg.split(/\s+/, 2)
+    verb.strip!
     rest.strip! if rest
     
-    if @commands.has_key? cmd
+    if @commands.has_key? verb
       begin
-        self.send(@commands[cmd], rest)
+        self.send(@commands[verb], rest)
       rescue => e
-        log :error, "slack command [#{cmd}] failed", exception: e
+        log :error, "slack command [#{verb}] failed", exception: e
       end
     else
       huh?
     end
   end
-  
+
   def eject_command(rest)
-    notify("Ejecting!")
+    SLACK.send_text_message("Ejecting!")
     RIPPER.eject
-  end
-  
-  def rip_command(rest)
-    if rest == 'all'
-      RIPPER.add_tracks(all: true)
-    elsif rest =~ /[\d,]+/
-      toq = []
-      rest.split(/,\s*/).each do |digits|
-        next if digits !~ /\d+/
-        toq << digits.to_i - 1  # add as 0-based
-      end
-      RIPPER.add_tracks(tracks: toq)
-    end
   end
   
   def confirm_repeat_command(rest)
@@ -61,13 +48,13 @@ class Commands
   def notify_movie_list
     files = Dir["#{DONE_ROOT}/*.m4v"].sort
     if files.empty?
-      notify("There are no completed shows at the moment.")
+      SLACK.send_text_message("There are no completed shows at the moment.")
     else
       msg = "Here are your completed shows:\n"
       files.each_with_index do |path, index|
         msg << "#{index+1}) #{File.basename(path, '.*')}\n"
       end
-      notify(msg)
+      SLACK.send_text_message(msg)
     end
   end
 
@@ -83,7 +70,7 @@ class Commands
     if index > 0 && index <= files.length && new_fn && new_fn !~ /^\s+$/
       old_fn = File.basename(files[index - 1], '.*')
       File.rename("#{DONE_ROOT}/#{old_fn}.m4v", "#{DONE_ROOT}/#{new_fn}.m4v")
-      notify("OK, I renamed \"#{old_fn}\" to \"#{new_fn}\".")
+      SLACK.send_text_message("OK, I renamed \"#{old_fn}\" to \"#{new_fn}\".")
       notify_movie_list
     else
       huh?
@@ -93,7 +80,7 @@ class Commands
   def archive_command(rest)
     # possibly removable media
     if !File.exists?(ARCHIVE_ROOT)
-      notify("Hmm, I can't see the archive root #{ARCHIVE_ROOT}.")
+      SLACK.send_text_message("Hmm, I can't see the archive root #{ARCHIVE_ROOT}.")
       return
     end
 
@@ -108,13 +95,13 @@ class Commands
     else
       indices.each do |index|
         MOVER.add_move(OpenStruct.new(source: files[index - 1], target: target))
-        notify("OK, added \"#{File.basename(files[index - 1], '.*')}\" to my archive queue.")
+        SLACK.send_text_message("OK, added \"#{File.basename(files[index - 1], '.*')}\" to my archive queue.")
       end
     end
   end
   
   def space_command(rest)
-    notify("I have #{PLATFORM.free_space}G of free space!")
+    SLACK.send_text_message("I have #{PLATFORM.free_space}G of free space!")
   end
 
   def what_command(rest)
@@ -129,7 +116,7 @@ class Commands
       end
     end
 
-    notify(status)
+    SLACK.send_text_message(status)
   end
 
   def status_command(rest)
@@ -148,7 +135,7 @@ class Commands
     msg << ">#{SLACK_CHAT_NAME} confirm_repeat\n"
     msg << ">#{SLACK_CHAT_NAME} eject\n"
 
-    notify(msg)
+    SLACK.send_text_message(msg)
   end
   
 end

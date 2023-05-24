@@ -32,8 +32,10 @@ class TestUtils < MiniTest::Test
   def test_format_time_diff
     [
       [ Time.now,                 "0s" ],
-      [ Time.now - 59,           "59s" ],
-      [ Time.now - 3599,     "59m:59s" ],
+      [ Time.now -     59,       "59s" ],
+      [ Time.now -  3_485,   "58m:05s" ],
+      [ Time.now -  3_599,   "59m:59s" ],
+      [ Time.now - 83_140,   "23h:05m" ],
       [ Time.now - 85_000,   "23h:36m" ],
     ].each do |test|
       assert_equal(test[1], format_time_diff(test[0]))
@@ -45,4 +47,40 @@ class TestUtils < MiniTest::Test
     assert_equal("27.1G", format_size(27_100_000_000))
   end
 
+  def test_hash_encryption
+    [
+      { foo: 'bar', jim: 'bean' },
+      { one_track: 1            },
+    ].each do |test|
+      # normalize keys with a pass thru JSON, but test with the convential literal we'll use
+      hash    = JSON.parse(test.to_json)
+      crypted = encrypt_hash(test)
+
+      refute_equal hash, crypted
+      assert_equal(hash, decrypt_hash(crypted))
+    end
+  end
+
+  def test_human_list
+    [
+      [ [               ],  "",           ],
+      [ [ 'a'           ],  "a"           ],
+      [ [ 'a', 'b'      ],  "a and b"     ],
+      [ [ 'a', 'b', 'c' ],  "a, b, and c" ],
+    ].each do |test|
+      assert_equal(test[1], human_list(test[0]))
+    end
+  end
+
+  def test_interpolate_cmd
+    [
+      {
+        input:  [ "a %{broken} string --option %{folder}", { broken: 'fixed', folder: 'yahoo beans' }, ],
+        output: [ 'a', 'fixed', 'string', '--option', 'yahoo beans' ]
+      },
+    ].each do |test|
+      assert_equal(test[:output], interpolate_cmd(test[:input][0], test[:input][1]))
+    end
+
+  end
 end

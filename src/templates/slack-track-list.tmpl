@@ -1,0 +1,88 @@
+[
+% if copy_protection
+    {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": "_Note: This list is very long, possible copy protection & playlist obfuscation_",
+        }
+    },
+% end
+% tracklist = "Disc *#{disc_name}* contains the following tracks:\n"
+% tracks.each_with_index do |track, index|
+%   tracklist += "#{index+1}: #{track.name} [#{format_time(track.time)}, #{format_size(track.size)}]\n"
+% end
+    {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": "<%= tracklist %>"
+        }
+    },
+% if ejected
+    {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": ":white_check_mark: Ejected",
+        }
+    }
+% elsif ripping_all
+    {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": ":white_check_mark: Ripping all",
+        }
+    }
+% else
+    {
+        "type": "actions",
+        "block_id": "<%= encrypt_hash({ class: 'ripper', method: 'track_list_pick' }) %>",
+        "elements": [
+%   tracks.each_with_index do |track, index|
+%     next if track.picked
+            {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Rip <%= index+1 %>"
+                },
+                "value": "<%= encrypt_hash({ one_track: track.id }) %>"
+            },
+%   end
+            {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "emoji": true,
+                    "text": "Rip all tracks"
+                },
+                "style": "primary",
+                "value": "<%= encrypt_hash({ all_tracks: true }) %>"
+            }
+%   if !ripping_any
+           ,{
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "emoji": true,
+                    "text": "Eject disc"
+                },
+                "style": "danger",
+                "value": "<%= encrypt_hash({ eject: true }) %>"
+            }
+%   end
+        ]
+    }
+% end
+% if ripping_any && !ripping_all
+   ,{
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": ":white_check_mark: Ripping <%= human_list(track_indexes) %>",
+        }
+    }
+%end
+]

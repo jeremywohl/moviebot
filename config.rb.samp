@@ -15,12 +15,13 @@ ARCHIVE_TARGETS = {
 }
 
 # Slack settings
-SLACK_EVENT_URI    = '/your-random-abcdefghijklmnopqrstuvwxyz/event'
-SLACK_BOT_TOKEN    = 'xoxb-slack-provided-abcdefghijklmnopqrstuvwxyz'
-SLACK_CHAT_NAME    = 'movie'   # how you get moviebot's attention
-SLACK_CHANNEL      = 'movies'  # moviebot will always responsd in this channel
-SLACK_LISTEN_PORT  = 8050      # listening port on the local machine
-SLACK_LISTEN_HOST  = '0.0.0.0' # listening IP address, usually unchanged
+SLACK_EVENT_URI   = '/your-random-abcdefghijklmnopqrstuvwxyz/event'
+SLACK_ACTION_URI  = '/your-random-abcdefghijklmnopqrstuvwxyz/action'
+SLACK_BOT_TOKEN   = 'xoxb-slack-provided-abcdefghijklmnopqrstuvwxyz'
+SLACK_CHAT_NAME   = 'movie'   # how you get moviebot's attention
+SLACK_CHANNEL     = 'movies'  # moviebot will always responsd in this channel
+SLACK_LISTEN_PORT = 8050      # listening port on the local machine
+SLACK_LISTEN_HOST = '0.0.0.0' # listening IP address, usually unchanged
 
 ##
 ## Additional settings -- the defaults are usually OK

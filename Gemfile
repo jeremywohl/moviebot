@@ -5,6 +5,8 @@ gem 'websocket-driver'
 gem 'concurrent-ruby'
 gem 'sequel'
 gem 'sqlite3'
+gem 'childprocess'
+gem 'activesupport'
 
 # dev
 gem 'minitest'

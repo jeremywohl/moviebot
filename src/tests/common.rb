@@ -8,8 +8,13 @@ require 'thread'
 require 'securerandom'
 require 'minitest/autorun'
 require 'fileutils'
+require 'erb'
+require 'securerandom'
+require 'json'
 
 require 'sequel'
+require 'active_support'
+require 'active_support/core_ext/hash/keys'
 
 require_relative 'mock_config'
 require_relative '../title_casing'
