@@ -9,6 +9,7 @@ class Database
 
     Sequel::Model.plugin :validation_helpers
     Sequel::Model.plugin :defaults_setter
+    Sequel::Model.plugin :timestamps
     Sequel.extension :migration
 
     # run migrations
