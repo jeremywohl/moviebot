@@ -13,9 +13,9 @@ class TestDatabase < MiniTest::Test
   end
 
   def test_from_track
-    track = OpenStruct.new(disc: 'disc', id: 1, name: 'Wreck-It_Ralph_t00.mkv', time: 24, size: 32)
+    track = OpenStruct.new(disc_name: 'disc', id: 1, name: 'Wreck-It_Ralph_t00.mkv', time: 24, size: 32)
     movie = Movie.new.set_from_track(track)
-    assert_equal 'disc',                   movie.disc
+    assert_equal 'disc',                   movie.disc_name
     assert_equal 1,                        movie.track_id
     assert_equal 'Wreck-It_Ralph_t00.mkv', movie.track_name
     assert_equal 24,                       movie.time

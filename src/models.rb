@@ -9,7 +9,7 @@ class Movie < Sequel::Model
   end
 
   def set_from_track(track)
-    self.disc       = track.disc
+    self.disc_name  = track.disc_name
     self.track_id   = track.id
     self.track_name = track.name
     self.time       = track.time
