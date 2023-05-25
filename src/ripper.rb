@@ -162,9 +162,15 @@ class Ripper
 
   def eject
     set_state :ejecting
-    PLATFORM.eject
-    @ejected = true
-    set_state :idle
+
+    if PLATFORM.drive_locked?
+      # TODO: upgrade to include BlockKit Eject button
+      SLACK.send_text_message("I'd like to eject the disc, but the drive is locked (computer asleep?); tell me \"movie eject\" when you wake it up.")
+    else
+      PLATFORM.eject
+      @ejected = true
+      set_state :idle
+    end
   end
 
   # handle track list action buttons
@@ -225,7 +231,7 @@ class Ripper
     min_tracks = @tracks.select { |t| ( t.time / 60 ) > MKV_RIP_MINLENGTH }
 
     if @currsig == @prevsig && !@confirm_repeat
-      SLACK.send_text_message("We're seeing the same *#{@disc_name}* disc again (computer asleep/locked?) -- if you'd like to repeat it, please tell me \"confirm_repeat\".", poke_channel: true)
+      SLACK.send_text_message("We're seeing the same *#{@disc_name}* disc again -- if you'd like to repeat it, please tell me \"confirm_repeat\".", poke_channel: true)
       set_state :asking
     elsif @tracks.empty?
       SLACK.send_text_message("Hmm, I didn't find any show-length tracks on disc *#{@disc_name}* -- ejecting!", poke_channel: true)

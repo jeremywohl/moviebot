@@ -42,6 +42,11 @@ class MacPlatform
     external_with_timing cmd
   end
 
+  def drive_locked?
+    # On a Mac, disc ejection will be prevented when the computer is locked
+    `ioreg -n Root -d1 -a | grep ScreenIsLocked`.strip.length > 0
+  end
+
   def sleep_idle
     sleep 10
   end
