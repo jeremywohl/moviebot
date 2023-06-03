@@ -12,7 +12,7 @@ class TestEncoder < MiniTest::Test
   end
 
   def test_encode
-    movie = Movie.new(name: "title00", track_name: "title00.mkv").save
+    movie = Movie.new(name: "title00", track_id: 0, track_name: "title00.mkv", size: 5531301888).save
     movie.set_rip_paths
     Dir.mkdir(movie.rip_dir)
     FileUtils.touch(movie.rip_fn)
@@ -23,8 +23,10 @@ class TestEncoder < MiniTest::Test
     assert_equal(false, File.exist?(movie.rip_fn))
     assert_equal(true,  File.exist?(movie.done_fn))
 
-    assert_equal( %|Starting the encode of "title00" [title00.mkv] (no others queued, with 22G free space).|, SLACK.history[-2] )
-    assert_equal( %|Finished encoding "title00" [title00.mkv] (took 0s).|, SLACK.history[-1] )
+    assert_equal( %|Starting to encode "title00" (no others queued, with 22G free space).|, SLACK.history[-2] )
+    assert_equal( %|Finished encoding "title00" (took 0s, 5.5G -> 0.0G, a 100% reduction).|, SLACK.history[-1] )
+
+    FileUtils.rm(movie.done_fn)
   end
   
   def test_absent_rip
@@ -38,7 +40,7 @@ class TestEncoder < MiniTest::Test
   
   def test_duplicate_names
     # create one file
-    movie = Movie.new(name: "title00", track_name: "title00.mkv").save
+    movie = Movie.new(name: "title00", track_id: 0, track_name: "title00.mkv", size: 5531301888).save
     movie.set_rip_paths
     Dir.mkdir(movie.rip_dir)
     FileUtils.touch(movie.rip_fn)
@@ -48,7 +50,7 @@ class TestEncoder < MiniTest::Test
     assert_equal(true, File.exist?("#{DONE_ROOT}/title00.m4v"))
     
     # and then another with the same name (but a different mkv path)
-    movie = Movie.new(name: "title00", track_name: "title00.mkv").save
+    movie = Movie.new(name: "title00", track_id: 0, track_name: "title00.mkv", size: 5531301888).save
     movie.set_rip_paths
     Dir.mkdir(movie.rip_dir)
     FileUtils.touch(movie.rip_fn)

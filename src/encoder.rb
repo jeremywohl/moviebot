@@ -4,94 +4,68 @@
 
 class Encoder
   
-  attr :queue  # for testing
-  
-  def initialize
-    @queue = Queue.new
+  def self.start_async(impl_class)
+    Encoder.new(impl_class)
   end
 
-  def self.start_async
-    encoder = Encoder.new
-
-    Thread.new do
-      begin
-        encoder.go
-      rescue => e
-        log :error, 'encoder died', exception: e
-        SLACK.send_text_message("I (encoder) die!", poke_channel: true)
-      end
-    end
-
-    return encoder
-  end
-
-  def go
+  def initialize(impl_class)
+    @impl = impl_class.send(:start_async, self)
     start_pending_encodes
-
-    loop do
-      encode(@queue.pop)
-      break if $shutdown
-    end
   end
 
-  def encode(movie)
+  # Enqueue ripped movies ready to encode, from a prior run.
+  def start_pending_encodes
+    Movie.where(state: 'ripped').each { |movie| self.add_movie(movie) }
+  end
+
+  def add_movie(movie)
     if !File.exist?(movie.rip_fn)
       SLACK.send_text_message( %(Hmmm, #{File.basename(movie.rip_fn)} doesn't seem to exist anymore; skipping.), poke_channel: true )
       movie.change_state(:failed)
       return
     end
 
+    queue_size = @impl.queue_size
     encodes_left =
-      case @queue.size
+      case queue_size
       when 0
         'no others queued, '
       else
-        sprintf("%s left, ", pluralize(@queue.size, 'other', 'others'))
+        sprintf("%s left, ", pluralize(queue_size, 'other', 'others'))
       end
 
-    SLACK.send_text_message("Starting the encode of \"#{movie.name}\" [#{movie.track_name}] (#{encodes_left}with #{PLATFORM.free_space}G free space).")
+    SLACK.send_text_message("Starting to encode \"#{movie.name}\" (#{encodes_left}with #{PLATFORM.free_space}G free space).")
     
-    movie.set_encode_fn
+    movie.encode_start_time = Time.now.to_i
+    movie.save
     movie.change_state(:encoding)
     
-    exit_code, result, timing = PLATFORM.encode(movie)
-    log :debug, result
+    @impl.add_movie(movie)
+  end
 
-    if $shutdown
+  def complete_movie(movie, status)
+    case status
+    when :fail
+      movie.change_state(:failed)
+      SLACK.send_text_message("There was an error while encoding \"#{movie.name}\"; please see the log.")
+    when :shutdown
       log :info, "Encoder shutdown and cleanup..."
       File.delete(movie.encode_fn) if File.exist?(movie.encode_fn)
       movie.change_state(:ripped)  # return to ripped state for later encoding
-      return
+    when :success
+      log :info, "deleting #{movie.rip_fn}"
+      FileUtils.remove_dir(movie.rip_dir)
+
+      movie.encode_time = Time.now - movie.encode_start_time
+      movie.encode_size = File.size(movie.done_fn)
+      puts "** #{movie.done_fn} has #{movie.encode_size} encode size"
+      movie.save
+      movie.change_state(:done)
+
+      reduction = ( ( movie.size - movie.encode_size ) / movie.size.to_f * 100 ) .to_i
+      size_msg  = "#{format_size(movie.size)} -> #{format_size(movie.encode_size)}, #{articleize_number(reduction)}% reduction"
+      SLACK.send_text_message("Finished encoding \"#{movie.name}\" (took #{format_time(movie.encode_time)}, #{size_msg}).")
     end
-
-    if exit_code > 0
-      movie.change_state(:ripped)
-      SLACK.send_text_message("There was an error while encoding \"#{movie.name}\"; please see the log.")
-      return
-    end
-
-    SLACK.send_text_message("Finished encoding \"#{movie.name}\" [#{movie.track_name}] (took #{timing}).")
-    
-    log :info, "deleting #{movie.rip_fn}"
-    FileUtils.remove_dir(movie.rip_dir)
-    
-    movie.done_fn = "#{DONE_ROOT}/#{movie.name}.m4v"
-    if File.exist?(movie.done_fn)
-      movie.done_fn = "#{DONE_ROOT}/#{movie.name}-#{SecureRandom.hex[0...5]}.m4v"
-    end
-    movie.save
-
-    File.rename(movie.encode_fn, movie.done_fn)
-    movie.change_state(:done)
-  end
-  
-  def add_movie(m)
-    @queue << m
-  end
-
-  # Enqueue ripped movies ready to encode, from a prior run.
-  def start_pending_encodes
-    Movie.where(state: 'ripped').each { |movie| self.add_movie(movie) }
   end
 
 end

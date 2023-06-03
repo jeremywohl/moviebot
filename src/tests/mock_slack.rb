@@ -22,8 +22,11 @@ class SlackMock
     Thread.new { COMMANDS.handle_msg(s) }.join
   end
   
-  def notify(s, opts={})
+  def send_text_message(s, opts={})
     @history << s
+  end
+
+  def send_block_kit_message(s, alt_s, opts)
   end
 
 end

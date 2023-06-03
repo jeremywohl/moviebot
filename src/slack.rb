@@ -1,11 +1,19 @@
 #
-# slack robot
+# Slack robot
+#
+# We add event and action listeners, and make changes with the Web API.
+# Events let us listen to "movie ..." commands, and actions occur at button
+# presses or modal dialogs.
+#
+# The block_id of actions (see templates) contains a direct class & method
+# call, for conveniently reaching any other subsystem. We encrypt these
+# directives so we can trust they are opaque and unaltered.
 #
 
 # TODO: print/raise errors, regardless of debug setting
 class WebrickLogger
   def <<(msg)
-    log :debug, "WEBRICK: #{msg}"
+    #log :debug, "WEBRICK: #{msg}"
   end
 end
 
@@ -42,7 +50,7 @@ class Slack
 
     server.mount_proc SLACK_EVENT_URI do |request, response|
       data = JSON.parse(request.body)
-      log :debug, "slack event data [#{data.inspect}]"
+      #log :debug, "slack event data [#{data.inspect}]"
 
       # server verification, echo challenge (we don't verify since we use a hidden URL)
       if data['type'] == 'url_verification'
@@ -82,7 +90,7 @@ class Slack
       body = URI.decode_www_form(request.body)  # url-encoded body text
       data = JSON.parse(body[0][1])             # [ "payload", "json string" ]
 
-      log :debug, "slack interactive data [#{data.inspect}]"
+      #log :debug, "slack interactive data [#{data.inspect}]"
 
       # TODO: this needed here?
       # server verification, echo challenge (we don't verify since we use a hidden URL)

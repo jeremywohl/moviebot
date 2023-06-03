@@ -5,33 +5,43 @@
 #
 #
 
-require 'ostruct'
-require 'thread'
-require 'securerandom'
-require 'net/http'
-require 'webrick'
-require 'json'
-require 'openssl'
 require 'fileutils'
+require 'json'
+require 'net/http'
+require 'openssl'
+require 'ostruct'
+require 'securerandom'
+require 'stringio'
 require 'tempfile'
+require 'thread'
+require 'webrick'
 
-require 'concurrent'
-require 'sequel'
-require 'childprocess'
 require 'active_support'
 require 'active_support/core_ext/hash/keys'
+require 'aws-sdk-ec2'
+require 'aws-sdk-s3'
+require 'childprocess'
+require 'concurrent'
+require 'net/scp'
+require 'net/ssh'
+require 'retryable'
+require 'sequel'
 
 require_relative '../config'
+require_relative 'platform'
+require_relative 'movie_set'
 require_relative 'title_casing'
 require_relative 'utils'
-require_relative 'platform'
 
+require_relative 'cloud_aws'
 require_relative 'commands'
-require_relative 'encoder'
-require_relative 'ripper'
-require_relative 'mover'
-require_relative 'slack'
 require_relative 'database'
+require_relative 'encode_cloudly'
+require_relative 'encode_locally'
+require_relative 'encoder'
+require_relative 'mover'
+require_relative 'ripper'
+require_relative 'slack'
 
 STDOUT.sync = true
 STDERR.sync = true
@@ -58,7 +68,8 @@ end
 
 # background
 RIPPER  = Ripper.start_async
-ENCODER = Encoder.start_async
+CLOUD   = CloudAws.new if USE_CLOUD
+ENCODER = Encoder.start_async(USE_CLOUD ? EncodeCloudly : EncodeLocally)
 
 # wait on completion
 SLACK.start_sync

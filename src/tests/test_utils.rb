@@ -81,6 +81,37 @@ class TestUtils < MiniTest::Test
     ].each do |test|
       assert_equal(test[:output], interpolate_cmd(test[:input][0], test[:input][1]))
     end
-
   end
+
+  def test_debug_logfile
+    old_value = change_constant(:LOG_DEBUG, true)
+
+    f = debug_logfile(label: 'foo')
+    assert_equal File, f.class
+    assert_match(/^\d+-foo-\w+$/, File.basename(f.path))
+
+    f = debug_logfile(label: 'foo', movie_id: 1)
+    assert_equal File, f.class
+    assert_match(/^\d+-1-foo-\w+$/, File.basename(f.path)) 
+
+    change_constant(:LOG_DEBUG, false)
+
+    f = debug_logfile(label: 'foo')
+    assert_equal StringIO, f.class
+
+    change_constant(:LOG_DEBUG, old_value)
+  end
+
+  def test_articleize_number
+    # a
+    [ 0, 1, 7, 70 ].each do |test|
+      assert_equal("a #{test}", articleize_number(test))
+    end
+
+    # an
+    [ 8, 11, 80, 81 ].each do |test|
+      assert_equal("an #{test}", articleize_number(test))
+    end
+  end
+
 end

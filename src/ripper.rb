@@ -60,13 +60,16 @@ class Ripper
     time = ''
     size = 0
 
+    #File.read(File.join(File.expand_path(File.dirname(__FILE__)), 'makemkv.output')).lines.each do |line|
     disc_list = PLATFORM.disc_list
     
     return false if $shutdown
     
-    disc_list.lines.each do |line|
-      log :debug, line
+    fetch_log = debug_logfile(label: 'track-list', description: 'MakeMKV track listing')
+    fetch_log.write disc_list
+    fetch_log.close
 
+    disc_list.lines.each do |line|
       case line
 
       # failure cases
@@ -261,7 +264,7 @@ class Ripper
   end
 
   def ripping_state
-    fail = false
+    had_fail = false
 
     while !@queue.empty?
       movie = @queue.pop
@@ -271,8 +274,12 @@ class Ripper
       Dir.mkdir(movie.rip_dir)
       SLACK.send_text_message("Starting to rip \"#{movie.name}\" [#{movie.track_name}] (with #{PLATFORM.free_space}G free space).")
 
+      rip_start_time = Time.now
       exit_code, results, timing = PLATFORM.disc_rip(movie)
-      log :debug, results
+
+      rip_log = debug_logfile(movie_id: movie.id, label: 'rip', description: 'MakeMKV rip log')
+      rip_log.write results
+      rip_log.close
 
       if $shutdown
         log :info, "Ripper shutdown and cleanup..."
@@ -285,17 +292,17 @@ class Ripper
         Dir.rmdir(movie.rip_dir)
 
         movie.change_state(:failed)
-        fail = true
-        break
+        had_fail = true
       else
         SLACK.send_text_message("Finished ripping \"#{movie.name}\" [#{movie.track_name}] (took #{timing}).")
         movie.change_state(:ripped)
+        movie.rip_time = Time.now - rip_start_time
         ENCODER.add_movie(movie)
       end
     end
 
-    if fail
-      SLACK.send_text_message("Ejecting.", poke_channel: true)  # for tone
+    if had_fail
+      SLACK.send_text_message("Ejecting. Try cleaning the disc, for those failed tracks?", poke_channel: true)  # for tone
     else
       SLACK.send_text_message("Ejecting!  Feed me another!", poke_channel: true)
     end

@@ -16,7 +16,7 @@ class Commands
   end
 
   def huh?
-    notify %(Huh? Try "#{SLACK_CHAT_NAME} help.")
+    SLACK.send_text_message %(Huh? Try "#{SLACK_CHAT_NAME} help.")
   end
   
   def handle_msg(msg)
