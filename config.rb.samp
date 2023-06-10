@@ -28,10 +28,10 @@ USE_CLOUD             = false
 AWS_ACCESS_KEY_ID     = 'ABCDEFGHIJKLMNOPQRS'
 AWS_SECRET_ACCESS_KEY = 'abcdefghijklmnopqrstuvwxyz'
 AWS_S3_BUCKET         = 'moviebot-something-something'
-AWS_REGION            = 'us-east-1'
+AWS_REGION            = 'us-east-2'
 AWS_SSH_KEY_NAME      = 'my-ssh-moniker'
 SSH_PRIVKEY_PATH      = '/Users/myself/.ssh/keys/aws-my-moniker'  # your local private key file
-AWS_IMAGE_ID          = 'ami-053b0d53c279acc90'  # Ubuntu 22 LTS
+AWS_IMAGE_ID          = 'ami-024e6efaf93d85776'  # Ubuntu 22 LTS in Ohio region
 AWS_INSTANCE_TYPE     = 'c6a.8xlarge'
 AWS_SG_GROUP_ID       = 'sg-234098234098234'
 
