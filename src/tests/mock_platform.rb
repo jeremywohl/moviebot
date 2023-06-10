@@ -16,6 +16,10 @@ class PlatformMock
     @disc_in_drive
   end
 
+  def drive_locked?
+    false
+  end
+
   def eject
     @disc_in_drive = false
     @mkv_response  = ''
@@ -31,7 +35,7 @@ class PlatformMock
 
   def encode(movie)
     FileUtils.touch(movie.encode_fn)
-    return "", "0s"
+    return 0, "", "0s"
   end
 
   def sleep_idle

@@ -35,8 +35,15 @@ end
 
 # cmd is an array of path elements, e.g. [ '/bin/bash', '-c', 'echo foo' ]
 def _external(cmd, opts={})
-  log :info, "cmd is ||#{cmd.inspect}||"
+  #log :info, "cmd is ||#{cmd.inspect}||"
   log :info, "starting [#{cmd.join(' ')}]" if !opts.has_key?(:silent)
+
+  # Here to discover sometimes-file-leak, but noisy (see mirror below)
+  ##openfhs = ObjectSpace.each_object(IO).reject(&:closed?)
+  # ObjectSpace.each_object(File) do |f|
+  #   log :debug, "** open file before %s: %d" % [f.path, f.fileno] unless f.closed?
+  # end
+  
 
   # setup
   process = ChildProcess.build(*cmd)
@@ -54,9 +61,13 @@ def _external(cmd, opts={})
   process.io.stdout.rewind
   result = process.io.stdout.read
   process.io.stdout.close!
-  
+
   log :info, "ran [#{cmd.join(' ')}] in #{diff}" if !opts.has_key?(:silent)
   
+  # ObjectSpace.each_object(File) do |f|
+  #   log :debug, "** open file after %s: %d" % [f.path, f.fileno] unless f.closed?
+  # end
+
   if process.exit_code > 0 && !$shutdown
     log :error, "command [#{cmd.join(' ')}] returned an error (code #{process.exit_code}), with the following output"
     log :error, result
@@ -138,6 +149,11 @@ def pluralize(count, singular, plural)
   "#{count || 0} #{word}"
 end
 
+def articleize_number(number)
+  numstring = number.to_s
+  ( numstring == '11' || numstring[0] == '8' ) ? "an #{numstring}" : "a #{numstring}"
+end
+
 def render_template(basename, vars_hash)
   template_fn = File.join(File.expand_path(File.dirname(__FILE__)), 'templates', basename)
   ERB.new(File.read(template_fn), trim_mode: "%>").result_with_hash(vars_hash)
@@ -183,4 +199,65 @@ end
 # spaces, suitable for passing complex filenames to a subprocess.
 def interpolate_cmd(input, vars)
   input.split.map { |field| field % vars }
+end
+
+# Execute block in a new thread, logging exceptions and telling Slack that
+# we've died, with label. The exception is not propagated.
+def wrapped_thread(label, &block)
+  Thread.new do
+    begin
+      yield
+    rescue => e
+      log :error, "#{label} died", exception: e
+      SLACK.send_text_message("I (#{label}) die!", poke_channel: true)
+    end
+  end
+end
+
+# Create a debug logfile that always works. If we're in debug mode, the file will be created
+# and writes will accrue. If we're not, writes are a no-op.
+#
+# opts: movie_id    (optional) group log file names
+#       label       (required) for filename
+#       description (optional) for main log
+#
+# Files go in log/debug. Names are time ordered.
+#   {time}-{label}-{random}
+# or
+#   {time}-{id}-{label}-{random}
+def debug_logfile(opts)
+  opts[:description] ||= 'log'
+  movie_id = opts[:movie_id] ? "-#{opts[:movie_id]}" : ''
+
+  if LOG_DEBUG
+    fn   = "#{Time.now.to_i}#{movie_id}-#{opts[:label]}-#{SecureRandom.alphanumeric(5)}"
+    path = File.join(File.expand_path(File.dirname(__FILE__)), '..', 'log', 'debug', fn)
+    debug_prefix = opts[:movie_id] ? "(movie id #{opts[:movie_id]}) " : ''
+    log :debug, "#{debug_prefix}saving #{opts[:description]} to #{path}"
+    file = open(path, 'w')
+    file.sync = true
+    file
+  else
+    StringIO.new
+  end
+end
+
+RETRY_RETRIES = 5  # how many times should we retry AWS API calls?
+#RETRY_BACKOFF = lambda { |n| 4**n }
+RETRY_BACKOFF = lambda { |n| 5 }  # TODO: swap after testing
+
+# opts: returnval: :call_result | :is_error_free
+def wrapped_retry(failed_to_what, opts, &block)
+  result = nil
+
+  begin
+    Retryable.retryable(tries: RETRY_RETRIES, sleep: RETRY_BACKOFF) do
+      result = yield
+    end
+  rescue Exception => e
+    log :error, "failed to #{failed_to_what}", exception: e
+    return false
+  end
+
+  opts[:return] == :is_error_free ? true : result
 end

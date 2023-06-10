@@ -1,20 +1,44 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (7.0.4.3)
+    activesupport (7.0.5)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
       tzinfo (~> 2.0)
+    aws-eventstream (1.2.0)
+    aws-partitions (1.771.0)
+    aws-sdk-core (3.173.1)
+      aws-eventstream (~> 1, >= 1.0.2)
+      aws-partitions (~> 1, >= 1.651.0)
+      aws-sigv4 (~> 1.5)
+      jmespath (~> 1, >= 1.6.1)
+    aws-sdk-ec2 (1.380.0)
+      aws-sdk-core (~> 3, >= 3.165.0)
+      aws-sigv4 (~> 1.1)
+    aws-sdk-kms (1.64.0)
+      aws-sdk-core (~> 3, >= 3.165.0)
+      aws-sigv4 (~> 1.1)
+    aws-sdk-s3 (1.122.0)
+      aws-sdk-core (~> 3, >= 3.165.0)
+      aws-sdk-kms (~> 1)
+      aws-sigv4 (~> 1.4)
+    aws-sigv4 (1.5.2)
+      aws-eventstream (~> 1, >= 1.0.2)
     childprocess (4.1.0)
     concurrent-ruby (1.2.2)
     i18n (1.13.0)
       concurrent-ruby (~> 1.0)
+    jmespath (1.6.2)
     mini_portile2 (2.8.2)
     minitest (5.18.0)
+    net-scp (4.0.0)
+      net-ssh (>= 2.6.5, < 8.0.0)
+    net-ssh (7.1.0)
     rake (13.0.6)
+    retryable (3.0.5)
     sequel (5.68.0)
-    sqlite3 (1.6.2)
+    sqlite3 (1.6.3)
       mini_portile2 (~> 2.8.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
@@ -27,10 +51,15 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport
+  aws-sdk-ec2
+  aws-sdk-s3
   childprocess
   concurrent-ruby
   minitest
+  net-scp
+  net-ssh
   rake
+  retryable
   sequel
   sqlite3
   websocket-driver

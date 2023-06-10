@@ -23,6 +23,18 @@ SLACK_CHANNEL     = 'movies'  # moviebot will always responsd in this channel
 SLACK_LISTEN_PORT = 8050      # listening port on the local machine
 SLACK_LISTEN_HOST = '0.0.0.0' # listening IP address, usually unchanged
 
+# Cloud settings (ignore if you'd like to encode locally)
+USE_CLOUD             = false
+AWS_ACCESS_KEY_ID     = 'ABCDEFGHIJKLMNOPQRS'
+AWS_SECRET_ACCESS_KEY = 'abcdefghijklmnopqrstuvwxyz'
+AWS_S3_BUCKET         = 'moviebot-something-something'
+AWS_REGION            = 'us-east-2'
+AWS_SSH_KEY_NAME      = 'my-ssh-moniker'
+SSH_PRIVKEY_PATH      = '/Users/myself/.ssh/keys/aws-my-moniker'  # your local private key file
+AWS_IMAGE_ID          = 'ami-024e6efaf93d85776'  # Ubuntu 22 LTS in Ohio region
+AWS_INSTANCE_TYPE     = 'c6a.8xlarge'
+AWS_SG_GROUP_ID       = 'sg-234098234098234'
+
 ##
 ## Additional settings -- the defaults are usually OK
 ##

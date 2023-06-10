@@ -16,7 +16,7 @@ class Commands
   end
 
   def huh?
-    notify %(Huh? Try "#{SLACK_CHAT_NAME} help.")
+    SLACK.send_text_message %(Huh? Try "#{SLACK_CHAT_NAME} help.")
   end
   
   def handle_msg(msg)
@@ -110,7 +110,7 @@ class Commands
     if active.empty?
       status = 'Just sitting here. How about you?'
     else
-      status = "Here is what's in progress:\n"
+      status = "What's in progress:\n"
       active.each do |movie|
         status += ">#{movie.name} [#{movie.track_name}] (#{VerboseStates[movie.state]})\n"
       end

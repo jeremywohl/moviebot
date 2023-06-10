@@ -3,6 +3,8 @@ Moviebot
 
 Moviebot is a Slack robot that automates the rip and encode of movie DVDs and Blu-rays. Moviebot watches your disc drive and, behind the scenes, uses MakeMKV and Handbrake to stir up beautiful m4v's. Meanwhile you sit on your couch and chat up moviebot, to pick tracks, and rename and move around completed movies. (Let the kids swap discs.)
 
+Encoding (the Handbrake step) can happen in the cloud or locally. Cloud encodes are parallel to each other, and essentially run at the speed your drive can rip. For instance, cloud encoding a season of a TV show is finished shortly after the last episode is ripped, while local encoding might take another 24 hours.
+
 _Note: The following refers to an older Slack setup, using a deprecated API. Will update this text soon._
 
 _Warning: Please observe your country's laws regarding commercial entertainment. You may or may not be able to make backup copies of movies you own._
