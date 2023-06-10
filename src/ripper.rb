@@ -7,11 +7,11 @@ class Ripper
   # MakeMKV CINFO/TINFO record identifiers
   #  see https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/MakeMKV-Codes
   TRACK_LENGTH   = 9   # h:m:s
-  TRACK_SIZE     = 11  # Note: the formatted '10' record uses incorrect powers-of-2 GB, so use these bytes.
+  TRACK_SIZE     = 11  # Note: the formatted '10' record uses incorrect powers-of-2 GB, so use this in bytes.
   TRACK_FILENAME = 27
   DISC_NAME      = 30
 
-  MAX_TRACK_LIST = 30
+  MAX_TRACK_LIST = 23  # BlockKit restricts lists to 25 items (23 + all & eject); seems unlikely we'll need more.
 
   def initialize
     @states    = Hash[self.methods.grep(/_state$/).map   { |m| [ m.to_s.gsub(/_state$/,   ''), m ] }]
