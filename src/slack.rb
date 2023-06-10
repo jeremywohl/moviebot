@@ -146,10 +146,17 @@ class Slack
     response_data = JSON.parse(response.body) rescue {}
 
     if response_data['ok'] != true
-      log :error, "Sorry, problem connecting to Slack.  Here's the error: #{response_data['error']}.  We die."
-      log :error, "[response] #{response.inspect}"
-      log :error, "[response_data] #{response_data.inspect}"
-      exit 1 if accept_notok == false
+      if response_data['error'] == 'invalid_json'
+        log :error, "Sorry, Slack doesn't like our JSON. Here's a copy of what we tried to send."
+        log :error, data
+        @pending << { type: text, text: "Sorry, Slack didn't like some of our text, so there will be missing content. See the log for more details." }
+        # carry on
+      else
+        log :error, "Sorry, problem connecting to Slack.  Here's the error: #{response_data['error']}.  We die."
+        log :error, "[response] #{response.inspect}"
+        log :error, "[response_data] #{response_data.inspect}"
+        exit 1 if accept_notok == false
+      end
     end
 
     return response_data
