@@ -4,7 +4,7 @@
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": "_Note: This list is very long, possible copy protection & playlist obfuscation_",
+            "text": "_Note: This list is very long, possible copy protection & playlist obfuscation -- if you have Java installed, MakeMKV will do its best to interpret the real playlist._",
         }
     },
 % end
@@ -81,7 +81,7 @@
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": ":white_check_mark: Ripping tracks <%= human_list(track_indexes) %>, and then will eject",
+            "text": ":white_check_mark: Ripping <%= track_indexes.size == 1 ? 'track' : 'tracks' %> <%= human_list(track_indexes) %>, and then will eject",
         }
     }
 %end

@@ -64,7 +64,7 @@ class CloudAws
         {
           device_name: '/dev/sda1', # this might change depending on the AMI
           ebs: {
-            volume_size: [ movie.size / 10**9 * 2, 8 ].max,  # twice raw size (in GiB), at least 8GiB
+            volume_size: [ movie.size / 10**9 * 2, 8 ].max,  # twice raw size (in GiB), at least 8GiB required
             delete_on_termination: true,
             volume_type: 'gp2',
           },
@@ -72,11 +72,7 @@ class CloudAws
       ],
       instance_market_options: {
         market_type: 'spot',
-        spot_options: {
-          #max_price: AWS_SPOT_MAXBID,
-          spot_instance_type: 'one-time',
-          instance_interruption_behavior: 'terminate',
-        },
+        # other options default to our desired one-time, and terminate on interruption
       },
     })
 

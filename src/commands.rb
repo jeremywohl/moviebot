@@ -110,7 +110,7 @@ class Commands
     if active.empty?
       status = 'Just sitting here. How about you?'
     else
-      status = "Here is what's in progress:\n"
+      status = "What's in progress:\n"
       active.each do |movie|
         status += ">#{movie.name} [#{movie.track_name}] (#{VerboseStates[movie.state]})\n"
       end

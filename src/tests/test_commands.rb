@@ -23,7 +23,7 @@ class TestCommands < MiniTest::Test
     Movie.new(name: 'abc', track_name: 'abc_t00.mkv').save
 
     output = <<~END
-    Here is what's in progress:
+    What's in progress:
     >abc [abc_t00.mkv] (waiting to be ripped)
     >def [def_t00.mkv] (waiting to be ripped)
     >ghi [ghi_t00.mkv] (now ripping)
