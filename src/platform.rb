@@ -62,14 +62,84 @@ class MacPlatform
 
 end
 
-PLATFORM = case RUBY_PLATFORM
-when /darwin/
-  MacPlatform.new
-# when /win32/
-#   WindowsPlatform.new
-# when /linux/
-#   LinuxPlatform.new
-else
-  log :error, "Sorry, we don't support platform #{RUBY_PLATFORM}."
-  exit 1
+# Present a fixed disc and small MKV movie from src/demo, for UI demonstration and testing.
+class DemoPlatform
+
+  DemoPrefixPath  = File.join(File.expand_path(File.dirname(__FILE__)), 'demo')
+  DemoMovie       = File.join(DemoPrefixPath, 'demo.mkv')
+  DemoMakeMkvList = File.join(DemoPrefixPath, 'demo-makemkv-list.output')
+
+  def initialize(os_platform)
+    @os_platform  = os_platform
+    @disc_present = false
+  end
+
+  # called by manual command from Slack -- only in demo mode
+  def set_disc_is_present
+    @disc_present = true
+  end
+
+  def disc_present?
+    @disc_present
+  end
+
+  def eject
+    @disc_present = false
+  end
+
+  def disc_list(minlength=MKV_SCAN_MINLENGTH * 60)
+    File.read(DemoMakeMkvList)
+  end
+
+  def disc_rip(movie, minlength=MKV_SCAN_MINLENGTH * 60)
+    FileUtils.cp(DemoMovie, movie.rip_fn)
+    return 0, '', "26m:52s"
+  end
+
+  def encode(movie)
+    @os_platform.encode(movie)
+  end
+
+  def drive_locked?
+    # On a Mac, disc ejection will be prevented when the computer is locked
+    `ioreg -n Root -d1 -a | grep ScreenIsLocked`.strip.length > 0
+  end
+
+  def sleep_idle
+    sleep 10
+  end
+  
+  def sleep_slow_wait
+    sleep 1
+  end
+
+  # Movie volume free space in gibabytes.
+  def free_space
+    '32'
+  end
+
+end
+
+class Platform
+
+  def self.make_platform
+    os_platform = case RUBY_PLATFORM
+    when /darwin/
+      MacPlatform.new
+    # when /win32/
+    #   WindowsPlatform.new
+    # when /linux/
+    #   LinuxPlatform.new
+    else
+      log :error, "Sorry, we don't support platform #{RUBY_PLATFORM}."
+      exit 1
+    end
+    
+    if DEMO_MODE
+      return DemoPlatform.new(os_platform)
+    else
+      return os_platform
+    end
+  end
+
 end

@@ -122,7 +122,16 @@ class Commands
   def status_command(rest)
     self.what_command(rest)
   end
-  
+
+  def demo_command(rest)
+    if !DEMO_MODE
+      SLACK.send_text_message("Sorry, I wasn't started in demo mode.")
+      return
+    else
+      PLATFORM.set_disc_is_present
+    end
+  end
+
   def help_command(rest)
     msg  = "Here are common things you can say to me:\n"
     msg << ">#{SLACK_CHAT_NAME} archive {#{ARCHIVE_TARGETS.keys.join(',')}} 1 [2 3 4]\n"
@@ -134,6 +143,7 @@ class Commands
     msg << "Here are my other commands:\n"
     msg << ">#{SLACK_CHAT_NAME} confirm_repeat\n"
     msg << ">#{SLACK_CHAT_NAME} eject\n"
+    msg << ">#{SLACK_CHAT_NAME} demo\n"
 
     SLACK.send_text_message(msg)
   end

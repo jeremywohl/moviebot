@@ -60,7 +60,6 @@ class Ripper
     time = ''
     size = 0
 
-    #File.read(File.join(File.expand_path(File.dirname(__FILE__)), 'makemkv.output')).lines.each do |line|
     disc_list = PLATFORM.disc_list
     
     return false if $shutdown

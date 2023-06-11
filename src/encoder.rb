@@ -58,7 +58,6 @@ class Encoder
 
       movie.encode_time = Time.now - movie.encode_start_time
       movie.encode_size = File.size(movie.done_fn)
-      puts "** #{movie.done_fn} has #{movie.encode_size} encode size"
       movie.save
       movie.change_state(:done)
 

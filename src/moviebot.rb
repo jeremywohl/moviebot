@@ -51,6 +51,8 @@ $shutdown = false
 DB = Database.open_and_migrate
 require_relative 'models'
 
+DEMO_MODE = ARGV[0] == '--demo-mode' ? true : false
+
 log :info, 'start'
 
 FileUtils.makedirs([ RIPPING_ROOT, ENCODING_ROOT, DONE_ROOT ])
@@ -65,6 +67,8 @@ SLACK = Slack.new
     SLACK.closeup      # TODO: may fail for thread lock reasons
   end
 end
+
+PLATFORM = Platform.make_platform
 
 # background
 RIPPER  = Ripper.start_async
