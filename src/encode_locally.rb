@@ -42,7 +42,10 @@ class EncodeLocally
     movie.set_encode_fn
 
     exit_code, result, _ = PLATFORM.encode(movie)
-    log :debug, result
+
+    script_log = debug_logfile(movie_id: movie.id, label: 'encode', description: "local script output")
+    script_log.write result
+    script_log.close
 
     if $shutdown
       @parent.complete_movie(movie, status: :shutdown)
