@@ -4,14 +4,13 @@
 # Encodes are split into three operations: upload, encode, and download. We operate on the
 # whole queue at once, prioritizing operations as follows: 1) start any encode with a ready
 # file in cloud, 2) upload files to cloud, 3) download files. We only run one upload/download
-# at a time, to preserve bandwidth. Any number of encodes can run in parallel. Since EC2
+# at a time, to preserve bandwidth. Any number of encodes can run in parallel. Since cloud compute
 # pricing is by the second, and creation and package setup is fast, we don't need to batch
 # multiple encodes on a single instance. So each instance runs a linear script and terminates,
 # and its lifetime is scoped only to encode time. This may change with other cloud implementations.
 #
-# Provider-specific calls are delegated to a third class. We depend on those methods to
-# retry APIs until sufficiently convinced there is a permanent error. We hard fail at this
-# level.
+# Provider-specific calls are delegated. We depend on those methods to retry APIs until
+# sufficiently convinced there is a permanent error. We hard fail at this level.
 #
 class EncodeCloudly
 
