@@ -81,12 +81,7 @@ class CloudAws
     instance.wait_until_running
     instance.reload
 
-    requests = @ec2client.describe_spot_instance_requests({
-      spot_instance_request_ids: [ instance.spot_instance_request_id ]
-    })
-
-    log :debug, "spot request: #{requests.first.inspect}"  #spot_price = requests.first.spot_price
-    log :debug, "(movie id #{movie.id}) created spot instance #{instance.id}, at price ..." # #{spot_price}"
+    log :debug, "(movie id #{movie.id}) created spot instance #{instance.id}"
 
     return instance
   end
