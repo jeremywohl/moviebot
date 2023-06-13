@@ -57,9 +57,6 @@ class EncodeLocally
       return
     end
     
-    movie.set_done_fn
-    File.rename(movie.encode_fn, movie.done_fn)
-
     @parent.complete_movie(movie, :success)
   end
 

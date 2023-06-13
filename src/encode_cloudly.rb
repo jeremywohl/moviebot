@@ -131,15 +131,12 @@ class EncodeCloudly
   end
 
   def do_downloading(movie)
-    temp_fn = "#{DONE_ROOT}/.#{movie.name}-#{SecureRandom.hex[0...5]}.m4v"
-    log :debug, "(movie id #{movie.id}) downloading #{movie.encode_cloud_name}.m4v to [#{temp_fn}]"
-    success = CLOUD.download_file(movie.encode_cloud_name + '.m4v', temp_fn)
+    movie.set_encode_fn
+    log :debug, "(movie id #{movie.id}) downloading #{movie.encode_cloud_name}.m4v to [#{movie.encode_fn}]"
+    success = CLOUD.download_file(movie.encode_cloud_name + '.m4v', movie.encode_fn)
     log :debug, "(movie id #{movie.id}) completed downloading #{movie.encode_cloud_name}.m4v" if success
 
     if success
-      movie.set_done_fn
-      File.rename(temp_fn, movie.done_fn)
-
       movie.change_encode_state(:ready_for_cleanup)
     end
 

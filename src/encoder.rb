@@ -57,8 +57,12 @@ class Encoder
       FileUtils.remove_dir(movie.rip_dir)
 
       movie.encode_time = Time.now - movie.encode_start_time
-      movie.encode_size = File.size(movie.done_fn)
+      movie.encode_size = File.size(movie.encode_fn)
       movie.save
+
+      movie.set_done_fn
+      File.rename(movie.encode_fn, movie.done_fn)
+
       movie.change_state(:done)
 
       reduction = ( ( movie.size - movie.encode_size ) / movie.size.to_f * 100 ) .to_i
