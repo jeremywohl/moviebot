@@ -24,7 +24,7 @@ class TestEncoder < MiniTest::Test
     assert_equal(true,  File.exist?(movie.done_fn))
 
     assert_equal( %|Starting to encode "title00" (no others queued, with 22G free space).|, SLACK.history[-2] )
-    assert_equal( %|Finished encoding "title00" (took 0s, 5.5G -> 0.0G, a 100% reduction).|, SLACK.history[-1] )
+    assert_equal( %|Finished encoding "title00" (took 0s, 5.5G -> 0.0G).|, SLACK.history[-1] )
 
     FileUtils.rm(movie.done_fn)
   end
