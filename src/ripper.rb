@@ -136,6 +136,22 @@ class Ripper
     end
   end
 
+  # How much disk space we need for all in-flight movies + new one (in base-10 GB)?
+  def needed_space(new_movie)
+    need = 0
+
+    Movie.where(state: [ 'ripping', 'ripped', 'encoding' ]).each do |movie|
+      if movie.state == 'ripping'
+        need += movie.size * 2  # rip + encode
+      else
+        need += movie.size      # encode
+      end
+    end
+
+    need += new_movie.size * 2  # rip + encode
+    need / 10**9
+  end
+
   # Send Slack a block kit list of tracks and track selection buttons
   # options: poke_channel: t/f, from_action: <a selection action>
   def notify_track_list(opts = {})
@@ -200,6 +216,10 @@ class Ripper
   def confirm_repeat
     @confirm_repeat = true
     set_state :present
+  end
+
+  def continue_ripping
+    set_state :ripping
   end
 
   #
@@ -267,6 +287,18 @@ class Ripper
 
     while !@queue.empty?
       movie = @queue.pop
+
+      need = needed_space(movie)
+      if PLATFORM.free_space < need
+        @queue << movie  # requeue
+        set_state :asking
+        SLACK.send_text_message(
+          "Sorry, I need at least #{need}G of disk space to continue ripping; " <<
+          "when it's free, you can tell me 'movie continue_ripping'."
+        )
+        return
+      end
+
       movie.set_rip_paths
       movie.change_state(:ripping)
 

@@ -44,6 +44,10 @@ class Commands
     RIPPER.confirm_repeat
   end
   
+  def continue_ripping_command(rest)
+    RIPPER.continue_ripping
+  end
+
   # send Slack our current movie list
   def notify_movie_list
     files = Dir["#{DONE_ROOT}/*.m4v"].sort
@@ -135,6 +139,7 @@ class Commands
   def help_command(rest)
     msg  = "Here are common things you can say to me:\n"
     msg << ">#{SLACK_CHAT_NAME} archive {#{ARCHIVE_TARGETS.keys.join(',')}} 1 [2 3 4]\n"
+    msg << ">#{SLACK_CHAT_NAME} eject\n"
     msg << ">#{SLACK_CHAT_NAME} list\n"
     msg << ">#{SLACK_CHAT_NAME} rip 1[,2,3,4]\n"
     msg << ">#{SLACK_CHAT_NAME} rename n Some new name (for n, see list)\n"
@@ -142,7 +147,7 @@ class Commands
     msg << ">#{SLACK_CHAT_NAME} status (or what)\n\n"
     msg << "Here are my other commands:\n"
     msg << ">#{SLACK_CHAT_NAME} confirm_repeat\n"
-    msg << ">#{SLACK_CHAT_NAME} eject\n"
+    msg << ">#{SLACK_CHAT_NAME} continue_ripping\n"
     msg << ">#{SLACK_CHAT_NAME} demo\n"
 
     SLACK.send_text_message(msg)

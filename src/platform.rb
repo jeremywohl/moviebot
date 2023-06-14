@@ -55,7 +55,7 @@ class MacPlatform
     sleep 1
   end
 
-  # Movie volume free space in gibabytes.
+  # Movie volume free space in gibabytes (base-10).
   def free_space
     `df -H #{MOVIES_ROOT}`.lines[-1].split[3].to_i
   end

@@ -17,7 +17,7 @@ def format_time(seconds)
   end
 end
 
-# Present in gigabytes (powers of 10), 27.4G.
+# Present in gigabytes (base-10), e.g. 27.4G.
 def format_size(bytes)
   sprintf "%0.1fG", bytes.to_f / 10**9
 end
