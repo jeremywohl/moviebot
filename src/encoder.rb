@@ -65,8 +65,7 @@ class Encoder
 
       movie.change_state(:done)
 
-      reduction = ( ( movie.size - movie.encode_size ) / movie.size.to_f * 100 ) .to_i
-      size_msg  = "#{format_size(movie.size)} -> #{format_size(movie.encode_size)}, #{articleize_number(reduction)}% reduction"
+      size_msg  = "#{format_size(movie.size)} -> #{format_size(movie.encode_size)}"
       SLACK.send_text_message("Finished encoding \"#{movie.name}\" (took #{format_time(movie.encode_time)}, #{size_msg}).")
     end
   end
