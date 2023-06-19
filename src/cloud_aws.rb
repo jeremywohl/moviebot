@@ -51,7 +51,7 @@ class CloudAws
   end
 
   def create_instance(movie)
-    log :debug, "(movie id #{movie.id}) creating instance"
+    log :debug, "(movie id #{movie.id}) aws: creating instance"
 
     instances = @ec2.create_instances({
       image_id: AWS_IMAGE_ID,
@@ -83,7 +83,7 @@ class CloudAws
     instance.wait_until_running
     instance.reload
 
-    log :debug, "(movie id #{movie.id}) created spot instance #{instance.id}"
+    log :debug, "(movie id #{movie.id}) aws: created spot instance #{instance.id}"
 
     return instance
   end
@@ -99,7 +99,7 @@ class CloudAws
   end
 
   def run_script(movie, instance, script)
-    log :debug, "(movie id #{movie.id}) running script"
+    log :debug, "(movie id #{movie.id}) aws: running script"
 
     io = StringIO.new(script)
 
@@ -136,17 +136,17 @@ class CloudAws
         script_log.puts '-' * 60
         script_log.puts "Completed at #{Time.now.to_s} with exit_code: #{exit_code}."
 
-        log :debug, "(movie id #{movie.id}) finished running script with exit_code #{exit_code}"
+        log :debug, "(movie id #{movie.id}) aws: finished running script with exit_code #{exit_code}"
         return exit_code == 0
       rescue IOError
-        log :debug, "(movie id #{movie.id}) ioerror, instance closed on us; will retry"
+        log :debug, "(movie id #{movie.id}) aws: ioerror, instance closed on us; will retry"
         raise
       end
     end
   end
 
   def terminate_instance(movie, instance)
-    log :debug, "(movie id #{movie.id}) terminating instance #{instance.id}"
+    log :debug, "(movie id #{movie.id}) aws: terminating instance #{instance.id}"
     @ec2.client.terminate_instances({ instance_ids: [ instance.id ] })
   end
   

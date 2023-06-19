@@ -34,6 +34,7 @@ class Encoder
         sprintf("%s left, ", pluralize(queue_size, 'other', 'others'))
       end
 
+    log :info, "(movie id #{movie.id}) encoding [#{movie.name}]"
     SLACK.send_text_message("Starting to encode \"#{movie.name}\" (#{encodes_left}with #{PLATFORM.free_space}G free space).")
     
     movie.encode_start_time = Time.now.to_i
@@ -47,6 +48,7 @@ class Encoder
     case status
     when :fail
       movie.change_state(:failed)
+      log :info, "(movie id #{movie.id}) failed to encode [#{movie.name}]"
       SLACK.send_text_message("There was an error while encoding \"#{movie.name}\"; please see the log.")
     when :shutdown
       log :info, "Encoder shutdown and cleanup..."
@@ -66,6 +68,7 @@ class Encoder
       movie.change_state(:done)
 
       size_msg  = "#{format_size(movie.size)} -> #{format_size(movie.encode_size)}"
+      log :info, "(movie id #{movie.id}) finished encoding [#{movie.name}] in #{format_time(movie.encode_time)}, #{size_msg}"
       SLACK.send_text_message("Finished encoding \"#{movie.name}\" (took #{format_time(movie.encode_time)}, #{size_msg}).")
     end
   end
