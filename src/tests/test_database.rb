@@ -25,9 +25,13 @@ class TestDatabase < MiniTest::Test
 
     # more names
 
-    track = OpenStruct.new(disc_name: 'disc', id: 1, name: 'B1_t00.mkv', time: 24, size: 32)
+    track = OpenStruct.new(disc_name: 'disc', id: 1, name: 'B1_t01.mkv', time: 24, size: 32)
     movie = Movie.new.set_from_track(track)
     assert_equal 'disc-B1-2', movie.name
+
+    track = OpenStruct.new(disc_name: 'disc', id: 1, name: 'title_t01.mkv', time: 24, size: 32)
+    movie = Movie.new.set_from_track(track)
+    assert_equal 'disc-Title-2', movie.name
   end
 
   def test_set_rip_paths

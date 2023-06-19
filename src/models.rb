@@ -27,10 +27,11 @@ class Movie < Sequel::Model
     self.time       = track.time
     self.size       = track.size
 
-    # Name: remove extension, clean and title case, prepend disc name if ambigiuous, and add track number
+    # Name: remove extension, clean and title case, prepend disc name if ambiguous, and add track number;
+    #   unknown tracks may be labeled with 2 characters (e.g. "D1") or as 'title'
     base      = File.basename(self.track_name, '.*')
     clean     = title_case_fn(clean_fn(base))
-    prefix    = clean.size == 2 ? "#{self.disc_name}-" : ''  # MakeMKV labeling for unknown tracks
+    prefix    = ( clean == 'Title' || clean.size == 2 ) ? "#{self.disc_name}-" : ''
     track_tag = "-#{self.track_id+1}"
     self.name = prefix + clean + track_tag
 
