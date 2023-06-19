@@ -71,7 +71,7 @@ class Slack
         if event['type'] == 'message' && !event.has_key?('subtype')
           wakeup_prefix, command = event['text'].split(' ', 2)
 
-          if wakeup_prefix == SLACK_CHAT_NAME && command != nil && !command.empty?
+          if wakeup_prefix.downcase == SLACK_CHAT_NAME.downcase && command != nil && !command.empty?
             self.handle_message(command)
           end
         end
