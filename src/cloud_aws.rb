@@ -64,7 +64,9 @@ class CloudAws
         {
           device_name: '/dev/sda1', # this might change depending on the AMI
           ebs: {
-            volume_size: [ movie.size / 10**9 * 2, 8 ].max,  # twice raw size (in GiB), at least 8GiB required
+            # (AWS uses GiB disk units!)
+            # volume is twice raw size, assume 2GiB lost to OS, at least 8GiB minimum disk
+            volume_size: [ ( movie.size.to_f / 2**30 * 2 + 2 ).ceil, 8 + 2 ].max,
             delete_on_termination: true,
             volume_type: 'gp2',
           },
