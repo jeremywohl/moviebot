@@ -35,7 +35,7 @@ class Ripper
         ripper.go
       rescue => e
         log :error, 'ripper died', exception: e
-        SLACK.send_text_message("I (ripper) die!", poke_channel: true)
+        SLACK.send_text_message("I (ripper) die!", bang: true, poke_channel: true)
       end
     end
 
@@ -73,11 +73,11 @@ class Ripper
 
       # failure cases
       when /MSG:5073,260,0,"Your temporary key has expired/
-        SLACK.send_text_message("Hmm, your MakeMKV key is expired.  Please update in the MakeMKV app, separately.")
+        SLACK.send_text_message("Hmm, your MakeMKV key is expired.  Please update in the MakeMKV app, separately.", bang: true)
         eject
         return false
       when /MSG:5055,0,0,"Evaluation period has expired/, /MSG:5021,260,1,"This application version is too old./
-        SLACK.send_text_message("Hmm, your MakeMKV evaluation period is expired.  Please update the MakeMKV app.")
+        SLACK.send_text_message("Hmm, your MakeMKV evaluation period is expired.  Please update the MakeMKV app.", bang: true)
         eject
         return false
 
@@ -294,7 +294,8 @@ class Ripper
         set_state :asking
         SLACK.send_text_message(
           "Sorry, I need at least #{need}G of disk space to continue ripping; " <<
-          "when it's free, you can tell me 'movie continue_ripping'."
+          "when it's free, you can tell me 'movie continue_ripping'.",
+          bang: true
         )
         return
       end
@@ -319,7 +320,7 @@ class Ripper
       end
 
       if exit_code > 0 || results.lines.grep(/Copy complete/).first =~ /failed/
-        SLACK.send_text_message("Sorry, the rip of \"#{movie.name}\" [#{movie.track_name}] failed (took #{timing}).  Try cleaning the disc and refeeding?")
+        SLACK.send_text_message("Sorry, the rip of \"#{movie.name}\" [#{movie.track_name}] failed (took #{timing}).  Try cleaning the disc and refeeding?", bang: true)
         Dir.rmdir(movie.rip_dir)
 
         movie.change_state(:failed)

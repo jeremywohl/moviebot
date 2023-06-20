@@ -209,7 +209,7 @@ def wrapped_thread(label, &block)
       yield
     rescue => e
       log :error, "#{label} died", exception: e
-      SLACK.send_text_message("I (#{label}) die!", poke_channel: true)
+      SLACK.send_text_message("I (#{label}) die!", bang: true, poke_channel: true)
     end
   end
 end

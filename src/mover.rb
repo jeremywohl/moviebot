@@ -36,6 +36,6 @@ Thread.new do
     MOVER.go
   rescue => e
     log :error, "mover died", exception: e
-    SLACK.send_text_message("I (mover) die!", poke_channel: true)
+    SLACK.send_text_message("I (mover) die!", bang: true, poke_channel: true)
   end
 end

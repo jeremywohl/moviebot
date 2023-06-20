@@ -20,7 +20,7 @@ class Encoder
 
   def add_movie(movie)
     if !File.exist?(movie.rip_fn)
-      SLACK.send_text_message( %(Hmmm, #{File.basename(movie.rip_fn)} doesn't seem to exist anymore; skipping.), poke_channel: true )
+      SLACK.send_text_message( %(Hmmm, #{File.basename(movie.rip_fn)} doesn't seem to exist anymore; skipping.), alert: true, poke_channel: true )
       movie.change_state(:failed)
       return
     end
@@ -49,7 +49,7 @@ class Encoder
     when :fail
       movie.change_state(:failed)
       log :info, "(movie id #{movie.id}) failed to encode [#{movie.name}]"
-      SLACK.send_text_message("There was an error while encoding \"#{movie.name}\"; please see the log.")
+      SLACK.send_text_message("There was an error while encoding \"#{movie.name}\"; please see the log.", bang: true)
     when :shutdown
       log :info, "Encoder shutdown and cleanup..."
       File.delete(movie.encode_fn) if File.exist?(movie.encode_fn)

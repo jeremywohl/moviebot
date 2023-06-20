@@ -149,7 +149,7 @@ class Slack
       if response_data['error'] == 'invalid_json'
         log :error, "Sorry, Slack doesn't like our JSON. Here's a copy of what we tried to send."
         log :error, data
-        @pending << { type: text, text: "Sorry, Slack didn't like some of our text, so there will be missing content. See the log for more details." }
+        @pending << { type: text, text: ":exclamation: Sorry, Slack didn't like some of our text, so there will be missing content. See the log for more details." }
         # carry on
       else
         log :error, "Sorry, problem connecting to Slack.  Here's the error: #{response_data['error']}.  We die."
@@ -173,10 +173,12 @@ class Slack
     Thread.new { COMMANDS.handle_msg(command) }
   end
 
-  # send Slack channel a simple text message; accepts /poke_channel: true/ to alert the channel.
+  # send Slack channel a simple text message; accepts /bang: true/ to include a visual warning,
+  # and /poke_channel: true/ to alert the channel.
   def send_text_message(msg, opts={})
     # observe Slack's message limit and truncate, if necessary
     msg = msg[0...MAX_SEND_CHARS-16]+"...truncating..." if msg.size >= MAX_SEND_CHARS
+    msg = ":exclamation: " << msg if opts[:bang]
 
     @pending << { type: :text, text: msg }
     @pending << { type: :text, text: "<!channel> (see above)" } if opts[:poke_channel]

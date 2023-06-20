@@ -84,7 +84,7 @@ class Commands
   def archive_command(rest)
     # possibly removable media
     if !File.exists?(ARCHIVE_ROOT)
-      SLACK.send_text_message("Hmm, I can't see the archive root #{ARCHIVE_ROOT}.")
+      SLACK.send_text_message("Hmm, I can't see the archive root #{ARCHIVE_ROOT}.", bang: true)
       return
     end
 
@@ -129,7 +129,7 @@ class Commands
 
   def demo_command(rest)
     if !DEMO_MODE
-      SLACK.send_text_message("Sorry, I wasn't started in demo mode.")
+      SLACK.send_text_message("Sorry, I wasn't started in demo mode.", bang: true)
       return
     else
       PLATFORM.set_disc_is_present
