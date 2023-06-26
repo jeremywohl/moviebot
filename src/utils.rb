@@ -38,51 +38,43 @@ def _external(cmd, opts={})
   #log :info, "cmd is ||#{cmd.inspect}||"
   log :info, "starting [#{cmd.join(' ')}]" if !opts.has_key?(:silent)
 
-  # Here to discover sometimes-file-leak, but noisy (see mirror below)
-  ##openfhs = ObjectSpace.each_object(IO).reject(&:closed?)
-  # ObjectSpace.each_object(File) do |f|
-  #   log :debug, "** open file before %s: %d" % [f.path, f.fileno] unless f.closed?
-  # end
-  
+  start     = Time.now
+  outfile   = Tempfile.new
+  pid       = Process.spawn(*cmd, out: outfile.fileno, err: :out)
+  SUBPROCS << pid       # add to halt list
+  _, status = Process.wait2(pid)
+  SUBPROCS.delete(pid)  # remove from halt list
+  exit_code = status.exitstatus
+  diff      = format_time_diff(start)
 
-  # setup
-  process = ChildProcess.build(*cmd)
-  process.io.stdout = process.io.stderr = Tempfile.new
-
-  # run
-  SUBPROCS << process  # add to halt list
-  start = Time.now
-  process.start
-  process.wait
-  diff  = format_time_diff(start)
-  SUBPROCS.delete_if { |p| p.pid == process.pid }  # remove from halt list
-
-  # gather output
-  process.io.stdout.rewind
-  result = process.io.stdout.read
-  process.io.stdout.close!
+  outfile.rewind
+  result = outfile.read
+  outfile.close!
 
   log :info, "ran [#{cmd.join(' ')}] in #{diff}" if !opts.has_key?(:silent)
   
-  # ObjectSpace.each_object(File) do |f|
-  #   log :debug, "** open file after %s: %d" % [f.path, f.fileno] unless f.closed?
-  # end
-
-  if process.exit_code > 0 && !$shutdown
-    log :error, "command [#{cmd.join(' ')}] returned an error (code #{process.exit_code}), with the following output"
+  if exit_code > 0 && !$shutdown
+    log :error, "command [#{cmd.join(' ')}] returned an error (code #{exit_code}), with the following output"
     log :error, result
   end
 
   if opts.has_key?(:timing)
-    return process.exit_code, result, diff
+    return exit_code, result, diff
   else
-    return process.exit_code, result
+    return exit_code, result
   end
 end
 
 def halt_subprocesses
-  log :info, "Halting ripping/encoding..." if SUBPROCS.any?
-  SUBPROCS.each { |p| p.stop }
+  if SUBPROCS.any?
+    log :info, "Halting ripping/encoding..." if SUBPROCS.any?
+    SUBPROCS.each do |pid|
+      Process.kill("TERM", pid)
+      Process.wait(pid)
+      # TODO: childprocess has a poll_for_exit here and eventually a KILL
+    end
+    log :info, "Halted."
+  end
 end
 
 LOG_MUTEX = Mutex.new
