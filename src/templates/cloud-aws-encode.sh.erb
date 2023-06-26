@@ -11,7 +11,7 @@ date
 sudo apt -y update
 sudo apt -y install handbrake-cli
 sudo apt -y install unzip
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+time curl --retry 5 --retry-all-errors --max-time 10 "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
 
