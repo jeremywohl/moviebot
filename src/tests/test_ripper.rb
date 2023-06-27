@@ -96,4 +96,20 @@ TINFO:0,27,0,"A_Story_t00.mkv"
     assert_equal 'abandoned', Movie.first(id: movie.id).state
   end
 
+  def test_abandoned_on_eject
+    movie = Movie.new(name: 'abc', track_name: 'abc_t00.mkv', state: 'pending')
+    movie.save
+    movie.set_rip_paths
+    Dir.mkdir(movie.rip_dir)
+    FileUtils.touch(movie.rip_fn)
+
+    assert Dir.exist?(movie.rip_dir)
+    assert File.exist?(movie.rip_fn)
+
+    RIPPER.eject
+
+    assert !Dir.exist?(movie.rip_dir)
+    assert_equal 'abandoned', Movie.first(id: movie.id).state
+  end
+
 end

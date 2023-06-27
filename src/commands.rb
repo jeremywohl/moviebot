@@ -37,7 +37,7 @@ class Commands
 
   def eject_command(rest)
     SLACK.send_text_message("Ejecting!")
-    RIPPER.eject
+    RIPPER.eject(from_command: true)
   end
   
   def confirm_repeat_command(rest)

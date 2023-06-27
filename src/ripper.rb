@@ -178,7 +178,13 @@ class Ripper
   # commands or actions, invoked via Slack
   #
 
-  def eject
+  # Eject the disc. options: from_command: true when invoking out-of-band from a Slack command.
+  def eject(opts = {})
+    if opts[:from_command] && in_state?(:ripping)
+      SLACK.send_text_message("Sorry, I cannot eject while ripping.", bang: true)
+      return
+    end
+
     set_state :ejecting
 
     if PLATFORM.drive_locked?
@@ -186,6 +192,7 @@ class Ripper
       SLACK.send_text_message("I'd like to eject the disc, but the drive is locked (computer asleep?); tell me \"movie eject\" when you wake it up.")
     else
       PLATFORM.eject
+      cleanup_abandoned_rips
       @ejected = true
       set_state :idle
     end
@@ -230,6 +237,15 @@ class Ripper
     st = st.to_s
     if @states.has_key? st
       @state = @states[st]
+    else
+      raise "I don't have a state #{st}."
+    end
+  end
+
+  def in_state?(st)
+    st = st.to_s
+    if @states.has_key? st
+      return @state == @states[st]
     else
       raise "I don't have a state #{st}."
     end
