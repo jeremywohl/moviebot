@@ -38,14 +38,22 @@ def _external(cmd, opts={})
   #log :info, "cmd is ||#{cmd.inspect}||"
   log :info, "starting [#{cmd.join(' ')}]" if !opts.has_key?(:silent)
 
-  start     = Time.now
-  outfile   = Tempfile.new
-  pid       = Process.spawn(*cmd, out: outfile.fileno, err: :out)
-  SUBPROCS << pid       # add to halt list
-  _, status = Process.wait2(pid)
+  start   = Time.now
+  outfile = Tempfile.new
+  pid     = Process.spawn(*cmd, out: outfile.fileno, err: :out)
+  SUBPROCS << pid  # add to halt list
+
+  begin
+    _, status = Process.wait2(pid)
+  rescue Errno::ECHILD
+    # our subproc was killed, usually by our shutdown routine
+    exit_code = 1
+  else
+    exit_code = status.exitstatus
+  end
+
   SUBPROCS.delete(pid)  # remove from halt list
-  exit_code = status.exitstatus
-  diff      = format_time_diff(start)
+  diff = format_time_diff(start)
 
   outfile.rewind
   result = outfile.read
