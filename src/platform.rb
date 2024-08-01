@@ -113,9 +113,9 @@ class DemoPlatform
     sleep 1
   end
 
-  # Movie volume free space in gibabytes.
+  # Movie volume free space in gibabytes (base-10).
   def free_space
-    '32'
+    32
   end
 
 end
