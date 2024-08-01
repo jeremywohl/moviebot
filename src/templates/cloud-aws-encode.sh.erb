@@ -9,11 +9,16 @@ cloud-init status --wait
 date
 # setup
 sudo apt -y update
-sudo apt -y install handbrake-cli
 sudo apt -y install unzip
 time curl --retry 5 --retry-all-errors --max-time 10 "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
+
+# install HandbrakeCLI
+sudo apt -y install flatpak
+/usr/lib/systemd/user-environment-generators/60-flatpak
+wget https://github.com/HandBrake/HandBrake/releases/download/1.8.1/HandBrakeCLI-1.8.1-x86_64.flatpak
+sudo flatpak install HandBrakeCLI-1.8.1-x86_64.flatpak -y
 
 # S3 keys
 set +x
@@ -24,6 +29,6 @@ set -x
 date
 # grab raw, encode, push encoded & cleanup
 time aws s3 cp s3://<%= bucket %>/<%= name %>.mkv input.mkv
-time HandBrakeCLI --input input.mkv --output output.m4v --preset 'HQ 1080p30 Surround' 2>&1
+time flatpak run fr.handbrake.HandBrakeCLI --input input.mkv --output output.m4v --preset '<%= profile %>' 2>&1
 time aws s3 cp output.m4v s3://<%= bucket %>/<%= name %>.m4v
 rm -f input.mkv output.m4v

@@ -95,6 +95,7 @@ class CloudAws
       aws_secret: AWS_SECRET_ACCESS_KEY,
       bucket:     AWS_S3_BUCKET,
       name:       movie.encode_cloud_name,
+      profile:    HANDBRAKE_PROFILE,
     })
   end
 
