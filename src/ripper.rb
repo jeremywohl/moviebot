@@ -305,11 +305,12 @@ class Ripper
       movie = @queue.pop
 
       need = needed_space(movie)
+
       if PLATFORM.free_space < need
         @queue << movie  # requeue
         set_state :asking
         SLACK.send_text_message(
-          "Sorry, I need at least #{need}G of disk space to continue ripping; " <<
+          "Sorry, I need you to free up #{need - PLATFORM.free_space}G of disk space to continue ripping (that is, #{need}G available); " <<
           "when it's free, you can tell me 'movie continue_ripping'.",
           bang: true
         )
